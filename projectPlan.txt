@@ -1,0 +1,3 @@
+vite frontend: simple static React frontend. like create-react-app but faster in development
+fastify.js backend, hosted (run locally during development)
+postgresSQL database, hosted on Supabase
