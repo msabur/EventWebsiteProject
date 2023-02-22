@@ -12,7 +12,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { BaseRouter } from "./routers/BaseRouter";
 
 const homeNav = [
-  ['/', 'Home'],
+  ['/', 'Events'],
+  ['/controlPanel', 'Control Panel'],
   ['/fruits', 'Fruits'],
   ['/logout', 'Logout'],
 ]

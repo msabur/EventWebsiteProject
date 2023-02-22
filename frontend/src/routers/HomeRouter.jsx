@@ -1,13 +1,18 @@
+import { observer } from "mobx-react-lite";
 import { Route, Switch } from "wouter";
 import { FruitsPage } from '../pages/FruitsPage';
-import { HomePage } from "../pages/HomePage";
+import { EventsListPage } from "../pages/EventsListPage";
+import { EventPage } from "../pages/EventPage";
+import { ControlPanelPage } from "../pages/ControlPanelPage";
 import { LogoutPage } from "../pages/LogoutPage";
 
-export const HomeRouter = () => (
+export const HomeRouter = observer(() => (
     <Switch>
-        <Route path="/" component={HomePage}/>
+        <Route path="/" component={EventsListPage}/>
+        <Route path="/event/:id" component={EventPage}/>
+        <Route path="/controlPanel" component={ControlPanelPage}/>
         <Route path="/fruits" component={FruitsPage} />
         <Route path="/logout" component={LogoutPage}/>
         <Route>404 - Not Found</Route>
     </Switch>
-)
+));
