@@ -5,7 +5,7 @@ import { LogoutPage } from "../pages/LogoutPage";
 
 export const HomeRouter = () => (
     <Switch>
-        <Route path="/">{HomePage}</Route>
+        <Route path="/" component={HomePage}/>
         <Route path="/fruits" component={FruitsPage} />
         <Route path="/logout" component={LogoutPage}/>
         <Route>404 - Not Found</Route>

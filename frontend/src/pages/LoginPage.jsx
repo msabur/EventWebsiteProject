@@ -38,7 +38,7 @@ export const LoginPage = observer(() => {
           setError(data.error);
         } else {
           setError('');
-          AuthState.onLogin(username, data.token)
+          AuthState.onLogin(username, data)
         };
       })
       .catch(err => {

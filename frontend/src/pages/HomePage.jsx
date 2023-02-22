@@ -1,7 +1,11 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { AuthState } from '../state/AuthState'
 
-export const HomePage = () => (
+export const HomePage = observer(() => (
   <>
-    <p>I am the home page!</p>
+    <p>Welcome to the homepage, {AuthState.username}!</p>
+    {AuthState.isAdmin && <p>You are an admin</p>}
+    {AuthState.isSuperAdmin && <p>You are a super admin</p>}
   </>
-);
+));
