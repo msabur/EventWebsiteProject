@@ -3,7 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { observer } from "mobx-react-lite";
-import { AuthState } from "./state/AuthState";
+import { AppState } from "./state/AppState";
 
 // import bootstrap css and js
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -25,13 +25,13 @@ const authNav = [
 
 const App = observer(() => {
   const [location] = useLocation()
-  const nav = AuthState.loggedIn ? homeNav : authNav
+  const nav = AppState.loggedIn ? homeNav : authNav
   return (
     <>
       <Navbar bg="light" expand="sm" collapseOnSelect>
         <Container>
           <Link href="/">
-            <Navbar.Brand>React-Bootstrap</Navbar.Brand>
+            <Navbar.Brand>Events Website</Navbar.Brand>
           </Link>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">

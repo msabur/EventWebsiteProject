@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useLocation } from "wouter";
-import { AuthState } from "../state/AuthState";
+import { AppState } from "../state/AppState";
 
 export function LogoutPage() {
     const [, setLocation] = useLocation();
     useEffect(() => {
-        AuthState.onLogout();
+        AppState.onLogout();
         setLocation("/");
     })
     return <p>Logging out...</p>;

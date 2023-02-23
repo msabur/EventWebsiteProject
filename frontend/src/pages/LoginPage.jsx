@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { AuthState } from '../state/AuthState';
+import { AppState } from "../state/AppState";
 import { observer } from 'mobx-react-lite';
 
 export const LoginPage = observer(() => {
@@ -33,12 +33,11 @@ export const LoginPage = observer(() => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         if (data.error) {
           setError(data.error);
         } else {
           setError('');
-          AuthState.onLogin(username, data)
+          AppState.onLogin(username, data)
         };
       })
       .catch(err => {

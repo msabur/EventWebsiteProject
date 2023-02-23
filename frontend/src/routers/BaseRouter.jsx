@@ -1,11 +1,11 @@
 import { Route } from "wouter";
 import { AuthRouter } from "./AuthRouter";
 import { HomeRouter } from "./HomeRouter";
-import { AuthState } from "../state/AuthState";
+import { AppState } from "../state/AppState";
 import { observer } from "mobx-react-lite";
 
 export const BaseRouter = observer(() => {
-  const isLoggedIn = AuthState.loggedIn;
+  const isLoggedIn = AppState.loggedIn;
 
   return (
     <>

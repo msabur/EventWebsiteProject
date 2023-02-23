@@ -11,7 +11,7 @@ class state {
     constructor() {
         makeAutoObservable(this);
         makePersistable(this, {
-            name: "AuthState",
+            name: "AppState",
             properties: ["loggedIn", "username", "token", "isAdmin", "isSuperAdmin"],
             storage: window.localStorage
         })
@@ -34,4 +34,4 @@ class state {
     }
 }
 
-export const AuthState = new state();
+export const AppState = new state();
