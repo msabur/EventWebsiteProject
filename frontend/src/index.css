@@ -5,3 +5,8 @@
 .registerError {
     color: red;
 }
+
+.leaflet-container {
+    height: 200px;
+    width: 500px;
+}

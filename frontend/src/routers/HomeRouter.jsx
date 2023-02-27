@@ -9,7 +9,7 @@ import { LogoutPage } from "../pages/LogoutPage";
 export const HomeRouter = observer(() => (
     <Switch>
         <Route path="/" component={EventsListPage}/>
-        <Route path="/event/:id" component={EventPage}/>
+        <Route path="/events/:id" component={EventPage}/>
         <Route path="/controlPanel" component={ControlPanelPage}/>
         <Route path="/fruits" component={FruitsPage} />
         <Route path="/logout" component={LogoutPage}/>
