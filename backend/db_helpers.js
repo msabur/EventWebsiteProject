@@ -16,7 +16,7 @@ export async function checkIsSuperAdmin(fastify, id) {
  */
 export async function getEvents(fastify, userId) {
     let query = (
-        `SELECT id, host_university_id, host_rso_id, event_name, description, location_name, time
+        `SELECT id, host_university_id, host_rso_id, event_name, description, location_name, start_time, end_time
             FROM events
             LEFT JOIN public_events USING (id)
             LEFT JOIN private_events USING (id)
@@ -64,7 +64,7 @@ export async function getEvents(fastify, userId) {
 
 export async function getEvent(fastify, eventId, userId) {
     let query = (
-        `SELECT id, host_university_id, host_rso_id, email_address, category, phone_number, description, time, event_name, location_name, location_latitude, location_longitude
+        `SELECT id, host_university_id, host_rso_id, email_address, category, phone_number, description, start_time, end_time, event_name, location_name, location_latitude, location_longitude
             FROM events
             LEFT JOIN public_events USING (id)
             LEFT JOIN private_events USING (id)
