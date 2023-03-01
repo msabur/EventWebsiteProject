@@ -38,7 +38,7 @@ async function routes(fastify, options) {
             reply.code(404).send({ message: 'Event not found' })
         } else {
             const feedbacksResult = await fastify.pg.query(
-                `SELECT users.username, comment, rating
+                `SELECT feedbacks.id, users.username, comment, rating
                 FROM feedbacks
                 JOIN users ON feedbacks.author_id = users.id
                 WHERE event_id = $1`,
