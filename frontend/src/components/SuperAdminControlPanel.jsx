@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
+import { useFetchWrapper } from "../api";
 
 export const SuperAdminControlPanel = () => {
+    const fetchWrapper = useFetchWrapper();
+
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
@@ -14,6 +17,15 @@ export const SuperAdminControlPanel = () => {
         if (form.checkValidity() === false) {
             return;
         }
+        fetchWrapper.post("/universities", {
+            name: form.universityName.value,
+            location: form.universityLocation.value,
+            description: form.universityDescription.value,
+            num_students: form.universityNumStudents.value,
+        })
+            .finally(() => {
+                handleClose();
+            });
     }
 
     return (
@@ -50,7 +62,7 @@ export const SuperAdminControlPanel = () => {
                             <Form.Label>Description</Form.Label>
                             <Form.Control as="textarea" rows={3} required />
                         </Form.Group>
-                        <Form.Group className="mb-3" controlId="universityStudentCount">
+                        <Form.Group className="mb-3" controlId="universityNumStudents">
                             <Form.Label>Number of Students</Form.Label>
                             <Form.Control
                                 type="number"
