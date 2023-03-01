@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import { formatTime } from "../utils";
+import { useFetchWrapper } from "../api";
 
 import "leaflet/dist/leaflet.css"
 
@@ -13,31 +14,27 @@ export const EventPage = observer(({ params }) => {
     const [feedbacks, setFeedbacks] = useState([]);
     const [commentEntry, setCommentEntry] = useState("");
     const [ratingEntry, setRatingEntry] = useState(5);
+    const [feedbackRefreshIndicator, setRefreshFeedbackIndicator] = useState(false);
     const [error, setError] = useState(null);
 
+    const fetchWrapper = useFetchWrapper()
+
     useEffect(() => {
-        fetch(`http://localhost:3000/events/${params.id}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${AppState.token}`
-            }
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                } else {
-                    return response.json()
-                }
-            })
+        fetchWrapper.get("/events/" + params.id)
             .then((data) => {
                 setEvent(data.event);
-                setFeedbacks(data.feedbacks);
             })
             .catch((error) => {
                 setError(error);
             });
     }, []);
+
+    useEffect(() => {
+        fetchWrapper.get("/events/" + params.id + "/feedbacks")
+            .then((data) => {
+                setFeedbacks(data.feedbacks);
+            });
+    }, [feedbackRefreshIndicator]);
 
     const handleCommentEntry = (e) => {
         setCommentEntry(e.target.value);
@@ -49,17 +46,13 @@ export const EventPage = observer(({ params }) => {
 
     const submitFeedback = (e) => {
         e.preventDefault();
-        fetch(`http://localhost:3000/events/${params.id}/feedbacks`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${AppState.token}`
-            },
-            body: JSON.stringify({
-                comment: commentEntry,
-                rating: ratingEntry,
-            })
+        fetchWrapper.post(`/events/${params.id}/feedbacks`, {
+            comment: commentEntry,
+            rating: ratingEntry,
         })
+            .then(() => {
+                setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
+            })
     };
 
     if (error) {
@@ -123,7 +116,7 @@ export const EventPage = observer(({ params }) => {
                     <Form.Group className="mb-3" controlId="formBasicRating">
                         <Form.Label>Your rating</Form.Label>
                         <Form.Control type="number" min="1" max="5" placeholder="Rating"
-                        value={ratingEntry} onChange={handleRatingEntry} />
+                            value={ratingEntry} onChange={handleRatingEntry} />
                     </Form.Group>
                     <Button variant="primary" type="submit" onClick={submitFeedback}>
                         Submit

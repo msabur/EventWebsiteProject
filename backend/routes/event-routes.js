@@ -11,6 +11,7 @@ async function routes(fastify, options) {
     // GET /events/:id: get full info of an event and its feedbacks (comments/ratings)
     // POST /events: create new event (admin only)
     // POST /events/:id/feedbacks: create new feedback
+    // GET /events/:id/feedbacks: get all feedbacks of an event
 
     fastify.get('/events', { preHandler: fastify.authenticate, }, async (request, reply) => {
         const { id } = request.user
@@ -37,15 +38,7 @@ async function routes(fastify, options) {
         if (!event) {
             reply.code(404).send({ message: 'Event not found' })
         } else {
-            const feedbacksResult = await fastify.pg.query(
-                `SELECT feedbacks.id, users.username, comment, rating
-                FROM feedbacks
-                JOIN users ON feedbacks.author_id = users.id
-                WHERE event_id = $1`,
-                [eventId]
-            )
-            const feedbacks = feedbacksResult.rows || []
-            reply.send({ event, feedbacks })
+            reply.send({ event })
         }
     })
 
@@ -53,6 +46,40 @@ async function routes(fastify, options) {
         // TODO
         reply.send({ message: 'Not implemented' })
     })
+
+    fastify.get('/events/:id/feedbacks', {
+        preHandler: fastify.authenticate,
+        schema: {
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'number' }
+                },
+                required: ['id']
+            }
+        }
+    }, async (request, reply) => {
+        const { id: eventId } = request.params
+        const { id: userId } = request.user
+
+        // check if user can access this event
+        const event = await getEvent(fastify, eventId, userId)
+        if (!event) {
+            reply.code(404).send({ message: 'Event not found' })
+            return
+        }
+        
+        const feedbacksResult = await fastify.pg.query(
+            `SELECT feedbacks.id, users.username, comment, rating
+            FROM feedbacks
+            JOIN users ON feedbacks.author_id = users.id
+            WHERE event_id = $1`,
+            [eventId]
+        )
+        const feedbacks = feedbacksResult.rows || []
+        reply.send({ feedbacks })
+    })
+
 
     fastify.post('/events/:id/feedbacks', {
         preHandler: fastify.authenticate,
