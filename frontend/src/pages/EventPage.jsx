@@ -62,38 +62,13 @@ export const EventPage = observer(({ params }) => {
         })
     };
 
-    // // set dummy comments
-    // useEffect(() => {
-    //     setFeedbacks([
-    //         {
-    //             id: 1,
-    //             comment: "This is a comment",
-    //             author: "Abdur Rahman",
-    //             rating: 5,
-    //         },
-    //         {
-    //             id: 2,
-    //             comment: "This is another comment",
-    //             author: "Musa Abdullah",
-    //             rating: 4,
-    //         },
-    //         {
-    //             id: 3,
-    //             comment: "This is a third comment",
-    //             author: "Captain Umar",
-    //             rating: 3,
-    //         }
-    //     ])
-    // }, []);
-
-
     if (error) {
         return (
             <>
                 <p>{error.message}</p>
             </>
         )
-    } else if (event === {} || !event.location_latitude) {
+    } else if (!event.location_latitude) {
         return (
             <>
                 <p>Loading...</p>
@@ -103,7 +78,7 @@ export const EventPage = observer(({ params }) => {
         return (
             <>
                 <h1>{[event.event_name]}</h1>
-                <h4>{formatTime(event.time)}</h4>
+                <h4>{formatTime(event.start_time)} - {formatTime(event.end_time)}</h4>
                 <p>{event.description}</p>
                 <h4>Location: {event.location_name}</h4>
                 <MapContainer

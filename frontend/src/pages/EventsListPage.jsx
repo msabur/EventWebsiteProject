@@ -60,7 +60,7 @@ export const EventsListPage = observer(() => {
               </ListGroup>
 
               <Card.Footer>
-                📅 {formatTime(event.time)}
+                📅 {formatTime(event.start_time)}
               </Card.Footer>
             </Card>
           </Col>
