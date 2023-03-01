@@ -60,7 +60,7 @@ async function routes(fastify, options) {
             params: {
                 type: 'object',
                 properties: {
-                    id: { type: 'string' }
+                    id: { type: 'number' }
                 },
                 required: ['id']
             },
