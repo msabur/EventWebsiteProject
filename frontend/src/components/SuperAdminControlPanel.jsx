@@ -3,15 +3,16 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import { useFetchWrapper } from "../api";
+import { NewUniModal } from "./NewUniModal";
 
 export const SuperAdminControlPanel = () => {
     const fetchWrapper = useFetchWrapper();
 
-    const [show, setShow] = useState(false);
+    const [showNewUniModal, setShowNewUniModal] = useState(false);
 
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-    const handleSubmit = (event) => {
+    const handleCloseNewUniModal = () => setShowNewUniModal(false);
+    const handleShowNewUniModal = () => setShowNewUniModal(true);
+    const handleSubmitNewUniModal = (event) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
@@ -24,58 +25,22 @@ export const SuperAdminControlPanel = () => {
             num_students: form.universityNumStudents.value,
         })
             .finally(() => {
-                handleClose();
+                handleCloseNewUniModal();
             });
     }
 
     return (
         <>
             <h3>Superadmin controls</h3>
-            <Button variant="primary" onClick={handleShow}>
+            <Button variant="primary" onClick={handleShowNewUniModal}>
                 New university
             </Button>
 
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Modal heading</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3" controlId="universityName">
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                required
-                                placeholder="Anytown University"
-                                autoFocus
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="universityLocation">
-                            <Form.Label>Location</Form.Label>
-                            <Form.Control
-                                type="text"
-                                required
-                                placeholder="Anytown"
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="universityDescription">
-                            <Form.Label>Description</Form.Label>
-                            <Form.Control as="textarea" rows={3} required />
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="universityNumStudents">
-                            <Form.Label>Number of Students</Form.Label>
-                            <Form.Control
-                                type="number"
-                                min="0"
-                                defaultValue="0"
-                                placeholder="1000"
-                                required
-                            />
-                        </Form.Group>
-                        <Button variant="primary" type="submit">Submit</Button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
+            <NewUniModal
+                show={showNewUniModal}
+                handleClose={handleCloseNewUniModal}
+                handleSubmit={handleSubmitNewUniModal}
+            />
         </>
     );
 }
