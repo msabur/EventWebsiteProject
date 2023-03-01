@@ -88,7 +88,7 @@ async function routes(fastify, options) {
         await fastify.pg.query(
             `INSERT INTO feedbacks (event_id, author_id, comment, rating)
             VALUES ($1, $2, $3, $4)`,
-            [id, userId, comment, rating]
+            [eventId, userId, comment, rating]
         )
 
         reply.send({ message: 'Success!' })
