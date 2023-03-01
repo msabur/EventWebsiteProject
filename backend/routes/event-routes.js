@@ -1,4 +1,3 @@
-import { checkIsSuperAdmin } from "../db_helpers.js"
 import { getEvents, getEvent } from "../db_helpers.js"
 
 /**

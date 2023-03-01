@@ -1,3 +1,5 @@
+import { checkIsSuperAdmin } from "../db_helpers.js"
+
 /**
  * A plugin that provide encapsulated routes
  * @param {FastifyInstance} fastify encapsulated fastify instance
@@ -29,10 +31,9 @@ async function routes(fastify, options) {
         },
     }, async (request, reply) => {
         const { name, location, description, num_students } = request.body
-        // check if user is super admin (is in super_admins table)
         const { id } = request.user
-        const superAdminResult = await fastify.pg.query('SELECT * FROM super_admins WHERE id = $1', [id])
-        if (superAdminResult.rows.length === 0) {
+        let isSuperAdmin = await checkIsSuperAdmin(fastify, id)
+        if (!isSuperAdmin) {
             reply.code(400).send({ error: 'Not authorized' })
             return
         }
@@ -60,10 +61,9 @@ async function routes(fastify, options) {
         },
     }, async (request, reply) => {
         const { name } = request.params
-        // check if user is super admin (is in super_admins table)
         const { id } = request.user
-        const superAdminResult = await fastify.pg.query('SELECT * FROM super_admins WHERE id = $1', [id])
-        if (superAdminResult.rows.length === 0) {
+        let isSuperAdmin = await checkIsSuperAdmin(fastify, id)
+        if (!isSuperAdmin) {
             reply.code(400).send({ error: 'Not authorized' })
             return
         }
