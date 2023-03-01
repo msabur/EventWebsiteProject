@@ -34,7 +34,7 @@ async function routes(fastify, options) {
         const { id } = request.user
         let isSuperAdmin = await checkIsSuperAdmin(fastify, id)
         if (!isSuperAdmin) {
-            reply.code(400).send({ error: 'Not authorized' })
+            reply.code(400).send({ message: 'Not authorized' })
             return
         }
         try {
@@ -44,7 +44,7 @@ async function routes(fastify, options) {
                 [name, location, description, num_students])
             reply.send({ message: 'University created' })
         } catch (err) {
-            reply.code(400).send({ error: 'University already exists' })
+            reply.code(400).send({ message: 'University already exists' })
         }
     })
 
@@ -64,14 +64,14 @@ async function routes(fastify, options) {
         const { id } = request.user
         let isSuperAdmin = await checkIsSuperAdmin(fastify, id)
         if (!isSuperAdmin) {
-            reply.code(400).send({ error: 'Not authorized' })
+            reply.code(400).send({ message: 'Not authorized' })
             return
         }
         try {
             await fastify.pg.query('DELETE FROM universities WHERE name = $1', [name])
             reply.send({ message: 'University deleted' })
         } catch (err) {
-            reply.code(400).send({ error: 'University not found' })
+            reply.code(400).send({ message: 'University not found' })
         }
     })
 }
