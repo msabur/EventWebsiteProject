@@ -7,6 +7,8 @@ class state {
     token = "";
     isAdmin = false;
     isSuperAdmin = false;
+    errorTimeout = null
+    errorMessage = "";
 
     constructor() {
         makeAutoObservable(this);
@@ -31,6 +33,21 @@ class state {
         this.username = "";
         this.token = "";
         return true;
+    }
+
+    onError(message) {
+        if (this.errorTimeout) {
+            clearTimeout(this.errorTimeout);
+        }
+        this.errorMessage = message;
+        this.errorTimeout = setTimeout(() => {
+            this.resetError();
+        }, 5000);
+    }
+
+    resetError() {
+        this.errorMessage = "";
+        this.errorTimeout = null;
     }
 }
 

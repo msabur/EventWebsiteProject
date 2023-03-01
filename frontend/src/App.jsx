@@ -4,6 +4,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { observer } from "mobx-react-lite";
 import { AppState } from "./state/AppState";
+import { ErrorAlert } from "./components/ErrorAlert";
 
 // import bootstrap css and js
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -50,6 +51,7 @@ const App = observer(() => {
       </Navbar>
 
       <Container>
+        {AppState.errorMessage && (<ErrorAlert message={AppState.errorMessage} />)}
         <BaseRouter />
       </Container>
     </>
