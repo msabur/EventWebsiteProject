@@ -30,5 +30,7 @@
 			- For RSOs and public events
 	- student
 		- View RSOs and choose one to join
+		- Request to make an RSO
+			- With at least 4 others; one of 'em becomes admin
 		- Can't leave RSO b/c that would be tough
 			- Need to reassign admin, etc
