@@ -8,7 +8,12 @@ import { checkIsSuperAdmin } from "../db_helpers.js"
 async function routes(fastify, _options) {
     // POST /rso - create a new rso with the given name and the current user as the owner
     // GET /rso/available/:name - check if the given rso name is available
-    // GET /rso - get all rsos (if not superadmin, only rsos owned by someone in his university)
+    // GET /rsos - get all rsos (if not superadmin, only rsos owned by someone in his university)
+    // GET /my-rsos - get all rsos the current user is a member of
+
+    // TODO: changing is_active to true when an rso has >4 members
+    // and changing it to false when an rso has <=4 members
+    // maybe we can do this in a trigger?
 
     fastify.post("/rso", {
         preHandler: fastify.authenticate,
@@ -58,7 +63,7 @@ async function routes(fastify, _options) {
         }
     });
 
-    fastify.get("/rso", {
+    fastify.get("/rsos", {
         preHandler: fastify.authenticate,
     }, async (request, reply) => {
         const { id } = request.user
@@ -80,6 +85,20 @@ async function routes(fastify, _options) {
                 [id])
             reply.send(result.rows)
         }
+    });
+
+    fastify.get("/my-rsos", {
+        preHandler: fastify.authenticate,
+    }, async (request, reply) => {
+        const { id } = request.user
+        const result = await fastify.pg.query(`
+            SELECT * FROM rsos
+            WHERE id IN (
+                SELECT rso_id FROM rso_memberships
+                WHERE user_id = $1
+            )`,
+            [id])
+        reply.send(result.rows)
     });
 }
 

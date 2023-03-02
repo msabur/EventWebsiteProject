@@ -14,3 +14,8 @@
 .in-front {
     z-index: 1000;
 }
+
+.scrollingListGroup {
+    max-height: 75vh;
+    overflow-y: scroll;
+}
