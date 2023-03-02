@@ -32,7 +32,7 @@ const App = observer(() => {
   const nav = AppState.loggedIn ? homeNav : authNav
   return (
     <>
-      <Navbar bg="light" expand="sm" collapseOnSelect>
+      <Navbar bg="dark" sticky="top" variant="dark" expand="sm" collapseOnSelect>
         <Container>
           <Link href="/">
             <Navbar.Brand>Events Website</Navbar.Brand>
