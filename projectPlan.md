@@ -22,20 +22,21 @@
 
 - control panel - all roles
 	- admin
-		- Make events: private, RSO
-			- Can only make RSO events for active RSOs
+		- Make events: private, RSO (if the RSO is active)
 		- Send request to super-admin for making public events
 		- View and act on requests
 			- For people joining his RSOs
 	- super admin
 		- View / create universities
-		- View and act on requests
-			- For public events
+		- View and act on requests to make public events
+		- View and act on requests to make RSOs
+			- Approving sets RSO's 'approved' field to true
+			- Approving also makes the requester an admin
 	- student
 		- View RSOs
 			- Can also leave RSOs from here
 		- Request to join an rso
 			- Its admin chooses to accept / reject
 		- Request to make an RSO
-			- Requester becomes admin of the new rso
+			- Requester will be admin of the new rso
 			- Once 4 more students join, it becomes active
