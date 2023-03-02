@@ -44,7 +44,7 @@ export async function getEvents(fastify, userId) {
                     rso_events.host_rso_id IN (
                         SELECT rso_id
                         FROM rso_memberships
-                        WHERE rso_memberships.student_id = $1
+                        WHERE rso_memberships.user_id = $1
                     )
                 )
             )
@@ -92,7 +92,7 @@ export async function getEvent(fastify, eventId, userId) {
                     rso_events.host_rso_id IN (
                         SELECT rso_id
                         FROM rso_memberships
-                        WHERE rso_memberships.student_id = $2
+                        WHERE rso_memberships.user_id = $2
                     )
                 )
             )
