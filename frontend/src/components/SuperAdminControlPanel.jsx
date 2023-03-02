@@ -32,9 +32,17 @@ export const SuperAdminControlPanel = () => {
     return (
         <>
             <h3>Superadmin controls</h3>
-            <Button variant="primary" onClick={handleShowNewUniModal}>
-                New university
-            </Button>
+
+            <Row xs={3} sm={3} md={5} className="g-2">
+                <Col>
+                <Button variant="primary" onClick={handleShowNewUniModal}>
+                    New university
+                </Button>
+                </Col>
+                <Col>
+                    <Button variant="primary">View requests</Button>
+                </Col>
+            </Row>
 
             <NewUniModal
                 show={showNewUniModal}
