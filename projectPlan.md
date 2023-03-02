@@ -23,14 +23,19 @@
 - control panel - all roles
 	- admin
 		- Make events: private, RSO
-		- Send request to super-admin for public
-	- super admin
-		- View / create / delete universities
+			- Can only make RSO events for active RSOs
+		- Send request to super-admin for making public events
 		- View and act on requests
-			- For RSOs and public events
+			- For people joining his RSOs
+	- super admin
+		- View / create universities
+		- View and act on requests
+			- For public events
 	- student
-		- View RSOs and choose one to join
+		- View RSOs
+			- Can also leave RSOs from here
+		- Request to join an rso
+			- Its admin chooses to accept / reject
 		- Request to make an RSO
-			- With at least 4 others; one of 'em becomes admin
-		- Can't leave RSO b/c that would be tough
-			- Need to reassign admin, etc
+			- Requester becomes admin of the new rso
+			- Once 4 more students join, it becomes active
