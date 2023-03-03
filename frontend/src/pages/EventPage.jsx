@@ -4,6 +4,8 @@ import { observer } from "mobx-react-lite";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import markerIconPng from "leaflet/dist/images/marker-icon.png"
+import {Icon} from 'leaflet'
 import { formatTime } from "../utils";
 import { useFetchWrapper } from "../api";
 
@@ -68,6 +70,7 @@ export const EventPage = observer(({ params }) => {
             </>
         )
     } else {
+        event.type = (event.host_rso_id) ? "RSO" : (event.host_university_id) ? "Private" : "Public";
         return (
             <>
                 <h1>{[event.event_name]}</h1>
@@ -83,7 +86,7 @@ export const EventPage = observer(({ params }) => {
                         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Marker position={[event.location_latitude, event.location_longitude]} />
+                    <Marker position={[event.location_latitude, event.location_longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})} />
                 </MapContainer>
                 <h4>Contact:</h4>
                 <p>Phone: {event.phone_number}</p>
