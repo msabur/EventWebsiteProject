@@ -6,13 +6,6 @@ import { observer } from "mobx-react-lite";
 import { AppState } from "./state/AppState";
 import { ErrorAlert } from "./components/ErrorAlert";
 
-// import bootstrap css and js
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min';
-
-// import leaflet css
-// import 'leaflet/dist/leaflet.css';
-
 import { BaseRouter } from "./routers/BaseRouter";
 
 const homeNav = [
