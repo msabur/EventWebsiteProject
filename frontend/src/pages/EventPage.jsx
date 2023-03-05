@@ -42,8 +42,8 @@ export const EventPage = observer(({ params }) => {
     }, [feedbackRefreshIndicator]);
 
     const submitFeedback = (comment, rating) => {
-        fetchWrapper.post(`/events/${params.id}/feedbacks`, 
-        { comment, rating, }
+        fetchWrapper.post(`/events/${params.id}/feedbacks`,
+            { comment, rating, }
         )
             .then(() => {
                 setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
@@ -60,7 +60,7 @@ export const EventPage = observer(({ params }) => {
     const onEditFeedback = (comment, rating, feedbackId) => {
         fetchWrapper.put(`/events/${params.id}/feedbacks/${feedbackId}`,
             { comment, rating }
-            )
+        )
             .then(() => {
                 setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
             })
@@ -119,10 +119,14 @@ export const EventPage = observer(({ params }) => {
                     </tbody>
                 </Table>
 
+                <hr />
                 <h4>Give feedback:</h4>
-                <FeedbackForm
-                    handler={submitFeedback}
-                />
+                <div className="mb-3">
+                    <FeedbackForm
+                        handler={submitFeedback}
+                    />
+                </div>
+                <hr />
 
                 <h4>Feedback:</h4>
                 {feedbacks.length == 0 ?
