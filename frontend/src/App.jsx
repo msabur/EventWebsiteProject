@@ -11,7 +11,6 @@ import { BaseRouter } from "./routers/BaseRouter";
 const homeNav = [
   ['/', 'Events'],
   ['/controlPanel', 'Control Panel'],
-  ['/fruits', 'Fruits'],
   ['/logout', 'Logout'],
 ]
 
