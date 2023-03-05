@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { AppState } from "../state/AppState";
 import { observer } from "mobx-react-lite";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import Card from 'react-bootstrap/Card';
+import ReactStars from "react-rating-stars-component";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
-import {Icon} from 'leaflet'
+import { Icon } from 'leaflet'
 import { formatTime } from "../utils";
 import { useFetchWrapper } from "../api";
 
@@ -15,13 +16,14 @@ export const EventPage = observer(({ params }) => {
     const [event, setEvent] = useState({});
     const [feedbacks, setFeedbacks] = useState([]);
     const [commentEntry, setCommentEntry] = useState("");
-    const [ratingEntry, setRatingEntry] = useState(5);
+    const [ratingEntry, setRatingEntry] = useState(3);
     const [feedbackRefreshIndicator, setRefreshFeedbackIndicator] = useState(false);
     const [error, setError] = useState(null);
 
     const fetchWrapper = useFetchWrapper()
 
     useEffect(() => {
+        console.log("EventPage useEffect")
         fetchWrapper.get("/events/" + params.id)
             .then((data) => {
                 setEvent(data.event);
@@ -42,8 +44,8 @@ export const EventPage = observer(({ params }) => {
         setCommentEntry(e.target.value);
     };
 
-    const handleRatingEntry = (e) => {
-        setRatingEntry(e.target.value);
+    const handleRatingEntry = (newRating) => {
+        setRatingEntry(newRating);
     };
 
     const submitFeedback = (e) => {
@@ -86,7 +88,7 @@ export const EventPage = observer(({ params }) => {
                         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Marker position={[event.location_latitude, event.location_longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})} />
+                    <Marker position={[event.location_latitude, event.location_longitude]} icon={new Icon({ iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41] })} />
                 </MapContainer>
                 <h4>Contact:</h4>
                 <p>Phone: {event.phone_number}</p>
@@ -96,35 +98,57 @@ export const EventPage = observer(({ params }) => {
                 <h4>Event category:</h4>
                 <p>{event.category}</p>
 
+                <h4>Give feedback:</h4>
+                <div className="mb-3">
+                    <Form>
+                        <Form.Group className="mb-3" controlId="formBasicComment">
+                            <Form.Label>Your comment</Form.Label>
+                            <Form.Control type="text" placeholder="Enter a comment"
+                                value={commentEntry} onChange={handleCommentEntry}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formBasicRating">
+                            <Form.Label>Your rating</Form.Label>
+                            <ReactStars
+                                count={5}
+                                value={ratingEntry}
+                                onChange={handleRatingEntry}
+                                size={24}
+                            />
+                        </Form.Group>
+                        <Button variant="primary" type="submit" onClick={submitFeedback}>
+                            Submit
+                        </Button>
+                    </Form>
+                </div>
                 <h4>Feedback:</h4>
                 {feedbacks.length == 0 ?
                     <p>No feedback yet!</p>
                     : feedbacks.map((comment) => (
-                        <div key={comment.id}>
-                            <p>{comment.comment}</p>
-                            <p>Author: {comment.username}</p>
-                            <p>Rating: {comment.rating}</p>
-                        </div>
+                        // attributes: comment, rating, username
+                        // nicely display the feedback as comment + rating
+                        <Card key={comment.id} className="mb-3" bg={"light"}>
+                            <Card.Header>
+                                {comment.username}
+                            </Card.Header>
+                            <Card.Body>
+                                <Card.Text>
+                                    {comment.comment}
+                                </Card.Text>
+                            </Card.Body>
+                            <Card.Footer>
+                                <ReactStars
+                                    count={5}
+                                    value={comment.rating}
+                                    size={24}
+                                    edit={false}
+                                    isHalf={true}
+                                />
+                            </Card.Footer>
+                        </Card>
                     ))
                 }
-                <h4>Leave a feedback:</h4>
-                <Form>
-                    <Form.Group className="mb-3" controlId="formBasicComment">
-                        <Form.Label>Your comment</Form.Label>
-                        <Form.Control type="text" placeholder="Enter a comment"
-                            value={commentEntry} onChange={handleCommentEntry}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formBasicRating">
-                        <Form.Label>Your rating</Form.Label>
-                        <Form.Control type="number" min="1" max="5" placeholder="Rating"
-                            value={ratingEntry} onChange={handleRatingEntry} />
-                    </Form.Group>
-                    <Button variant="primary" type="submit" onClick={submitFeedback}>
-                        Submit
-                    </Button>
-                </Form>
             </>
         )
     }
