@@ -16,7 +16,13 @@ export async function checkIsSuperAdmin(fastify, id) {
  */
 export async function getEvents(fastify, userId) {
     let query = (
-        `SELECT id, host_university_id, host_rso_id, event_name, description, location_name, start_time, end_time
+        `SELECT id, host_university_id, host_rso_id, event_name, description,
+                location_name, start_time, end_time,
+                CASE
+                    WHEN host_university_id IS NOT NULL THEN 'private'
+                    WHEN host_rso_id IS NOT NULL THEN 'rso'
+                    ELSE 'public'
+                END AS type
             FROM events
             LEFT JOIN public_events USING (id)
             LEFT JOIN private_events USING (id)
@@ -63,8 +69,19 @@ export async function getEvents(fastify, userId) {
  */
 
 export async function getEvent(fastify, eventId, userId) {
+    // in the select, add a column for the event type
+    // if has host_university_id, then it's a private event
+    // if has host_rso_id, then it's an rso event
+    // if has neither, then it's a public event
     let query = (
-        `SELECT id, host_university_id, host_rso_id, email_address, category, phone_number, description, start_time, end_time, event_name, location_name, location_latitude, location_longitude
+        `SELECT id, host_university_id, host_rso_id, email_address, category,
+                phone_number, description, start_time, end_time, event_name,
+                location_name, location_latitude, location_longitude,
+                CASE
+                    WHEN host_university_id IS NOT NULL THEN 'private'
+                    WHEN host_rso_id IS NOT NULL THEN 'rso'
+                    ELSE 'public'
+                END AS type
             FROM events
             LEFT JOIN public_events USING (id)
             LEFT JOIN private_events USING (id)
