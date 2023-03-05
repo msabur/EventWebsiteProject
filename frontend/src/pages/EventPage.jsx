@@ -1,29 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import ReactStars from "react-rating-stars-component";
-import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import Table from 'react-bootstrap/Table';
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import { Icon } from 'leaflet'
 import { formatTime } from "../utils";
 import { useFetchWrapper } from "../api";
+import { FeedbackForm } from "../components/FeedbackForm";
+import { FeedbackEditModal } from "../components/FeedbackEditModal";
 
 import "leaflet/dist/leaflet.css"
 
 export const EventPage = observer(({ params }) => {
     const [event, setEvent] = useState({});
     const [feedbacks, setFeedbacks] = useState([]);
-    const [commentEntry, setCommentEntry] = useState("");
-    const [ratingEntry, setRatingEntry] = useState(3);
     const [feedbackRefreshIndicator, setRefreshFeedbackIndicator] = useState(false);
     const [error, setError] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [idOfFeedbackToEdit, setidOfFeedbackToEdit] = useState(null);
 
     const fetchWrapper = useFetchWrapper()
 
     useEffect(() => {
-        console.log("EventPage useEffect")
         fetchWrapper.get("/events/" + params.id)
             .then((data) => {
                 setEvent(data.event);
@@ -40,20 +41,26 @@ export const EventPage = observer(({ params }) => {
             });
     }, [feedbackRefreshIndicator]);
 
-    const handleCommentEntry = (e) => {
-        setCommentEntry(e.target.value);
+    const submitFeedback = (comment, rating) => {
+        fetchWrapper.post(`/events/${params.id}/feedbacks`, 
+        { comment, rating, }
+        )
+            .then(() => {
+                setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
+            })
     };
 
-    const handleRatingEntry = (newRating) => {
-        setRatingEntry(newRating);
+    const onDeleteFeedback = (feedbackId) => {
+        fetchWrapper.delete(`/events/${params.id}/feedbacks/${feedbackId}`)
+            .then(() => {
+                setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
+            })
     };
 
-    const submitFeedback = (e) => {
-        e.preventDefault();
-        fetchWrapper.post(`/events/${params.id}/feedbacks`, {
-            comment: commentEntry,
-            rating: ratingEntry,
-        })
+    const onEditFeedback = (comment, rating, feedbackId) => {
+        fetchWrapper.put(`/events/${params.id}/feedbacks/${feedbackId}`,
+            { comment, rating }
+            )
             .then(() => {
                 setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
             })
@@ -90,57 +97,67 @@ export const EventPage = observer(({ params }) => {
                     />
                     <Marker position={[event.location_latitude, event.location_longitude]} icon={new Icon({ iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41] })} />
                 </MapContainer>
-                <h4>Contact:</h4>
-                <p>Phone: {event.phone_number}</p>
-                <p>Email: {event.email_address}</p>
-                <h4>Event type:</h4>
-                <p>{event.type}</p>
-                <h4>Event category:</h4>
-                <p>{event.category}</p>
+                <h4>More information</h4>
+                <Table bordered hover>
+                    <tbody>
+                        <tr>
+                            <td>Event type</td>
+                            <td>{event.type}</td>
+                        </tr>
+                        <tr>
+                            <td>Event category</td>
+                            <td>{event.category}</td>
+                        </tr>
+                        <tr>
+                            <td>Contact phone</td>
+                            <td>{event.phone_number}</td>
+                        </tr>
+                        <tr>
+                            <td>Contact email</td>
+                            <td>{event.email_address}</td>
+                        </tr>
+                    </tbody>
+                </Table>
 
                 <h4>Give feedback:</h4>
-                <div className="mb-3">
-                    <Form>
-                        <Form.Group className="mb-3" controlId="formBasicComment">
-                            <Form.Label>Your comment</Form.Label>
-                            <Form.Control type="text" placeholder="Enter a comment"
-                                value={commentEntry} onChange={handleCommentEntry}
-                            />
-                        </Form.Group>
+                <FeedbackForm
+                    handler={submitFeedback}
+                />
 
-                        <Form.Group className="mb-3" controlId="formBasicRating">
-                            <Form.Label>Your rating</Form.Label>
-                            <ReactStars
-                                count={5}
-                                value={ratingEntry}
-                                onChange={handleRatingEntry}
-                                size={24}
-                            />
-                        </Form.Group>
-                        <Button variant="primary" type="submit" onClick={submitFeedback}>
-                            Submit
-                        </Button>
-                    </Form>
-                </div>
                 <h4>Feedback:</h4>
                 {feedbacks.length == 0 ?
                     <p>No feedback yet!</p>
-                    : feedbacks.map((comment) => (
-                        // attributes: comment, rating, username
-                        // nicely display the feedback as comment + rating
-                        <Card key={comment.id} className="mb-3" bg={"light"}>
+                    : feedbacks.map((feedback) => (
+                        <Card key={feedback.id} className="mb-3" bg={"light"}>
                             <Card.Header>
-                                {comment.username}
+                                {feedback.username}
+                                {/*  delete button */}
+                                {feedback.is_mine &&
+                                    <Button variant="danger" size="sm" className="float-end"
+                                        onClick={() => onDeleteFeedback(feedback.id)}
+                                    >
+                                        Delete
+                                    </Button>
+                                }
+                                {/* edit button that opens a textbox and rating entry under the comment */}
+                                {feedback.is_mine &&
+                                    <Button variant="primary" size="sm" className="float-end me-2"
+                                        onClick={() => {
+                                            setidOfFeedbackToEdit(feedback.id)
+                                            setShowEditModal(true)
+                                        }}
+                                    >
+                                        Edit
+                                    </Button>
+                                }
                             </Card.Header>
                             <Card.Body>
-                                <Card.Text>
-                                    {comment.comment}
-                                </Card.Text>
+                                <Card.Text>{feedback.comment}</Card.Text>
                             </Card.Body>
                             <Card.Footer>
                                 <ReactStars
                                     count={5}
-                                    value={comment.rating}
+                                    value={feedback.rating}
                                     size={24}
                                     edit={false}
                                     isHalf={true}
@@ -149,6 +166,13 @@ export const EventPage = observer(({ params }) => {
                         </Card>
                     ))
                 }
+
+                <FeedbackEditModal
+                    show={showEditModal}
+                    handleClose={() => setShowEditModal(false)}
+                    feedbackId={idOfFeedbackToEdit}
+                    handleSubmit={onEditFeedback}
+                />
             </>
         )
     }
