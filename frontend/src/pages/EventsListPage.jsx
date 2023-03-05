@@ -35,7 +35,7 @@ export const EventsListPage = observer(() => {
 
   return (
     <>
-      <p>Welcome to the events page!</p>
+      <p>Welcome, {AppState.username}!</p>
       <p>Here are the events:</p>
       <Row xs={1} md={2} lg={3} className="g-4">
         {events.map((event) => (
