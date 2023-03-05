@@ -17,16 +17,8 @@ export async function checkIsSuperAdmin(fastify, id) {
 export async function getEvents(fastify, userId) {
     let query = (
         `SELECT id, host_university_id, host_rso_id, event_name, description,
-                location_name, start_time, end_time,
-                CASE
-                    WHEN host_university_id IS NOT NULL THEN 'private'
-                    WHEN host_rso_id IS NOT NULL THEN 'rso'
-                    ELSE 'public'
-                END AS type
-            FROM events
-            LEFT JOIN public_events USING (id)
-            LEFT JOIN private_events USING (id)
-            LEFT JOIN rso_events USING (id)
+                location_name, start_time, end_time, type
+            FROM events_view
         `)
 
     let eventResult
@@ -38,19 +30,19 @@ export async function getEvents(fastify, userId) {
     } else {
         query += (`
             WHERE (
-                public_events.id IS NOT NULL OR (
-                private_events.id IS NOT NULL AND
-                    private_events.host_university_id = (
+                type = 'public' OR (
+                    type = 'private' AND
+                    host_university_id = (
                         SELECT university_id
                         FROM students
                         WHERE students.id = $1
-                    )
-                ) OR (
-                    rso_events.id IS NOT NULL AND
-                    rso_events.host_rso_id IN (
-                        SELECT rso_id
-                        FROM rso_memberships
-                        WHERE rso_memberships.user_id = $1
+                    ) OR (
+                        type = 'rso' AND
+                        host_rso_id IN (
+                            SELECT rso_id
+                            FROM rso_memberships
+                            WHERE rso_memberships.user_id = $1
+                        )
                     )
                 )
             )
@@ -74,19 +66,9 @@ export async function getEvent(fastify, eventId, userId) {
     // if has host_rso_id, then it's an rso event
     // if has neither, then it's a public event
     let query = (
-        `SELECT id, host_university_id, host_rso_id, email_address, category,
-                phone_number, description, start_time, end_time, event_name,
-                location_name, location_latitude, location_longitude,
-                CASE
-                    WHEN host_university_id IS NOT NULL THEN 'private'
-                    WHEN host_rso_id IS NOT NULL THEN 'rso'
-                    ELSE 'public'
-                END AS type
-            FROM events
-            LEFT JOIN public_events USING (id)
-            LEFT JOIN private_events USING (id)
-            LEFT JOIN rso_events USING (id)
-            WHERE events.id = $1
+        `SELECT *
+            FROM events_view
+            WHERE id = $1
         `)
 
     let eventResult
@@ -97,19 +79,19 @@ export async function getEvent(fastify, eventId, userId) {
     } else {
         query += (`
             AND (
-                public_events.id IS NOT NULL OR (
-                private_events.id IS NOT NULL AND
-                    private_events.host_university_id = (
+                type = 'public' OR (
+                    type = 'private' AND
+                    host_university_id = (
                         SELECT university_id
                         FROM students
                         WHERE students.id = $2
-                    )
-                ) OR (
-                    rso_events.id IS NOT NULL AND
-                    rso_events.host_rso_id IN (
-                        SELECT rso_id
-                        FROM rso_memberships
-                        WHERE rso_memberships.user_id = $2
+                    ) OR (
+                        type = 'rso' AND
+                        host_rso_id IN (
+                            SELECT rso_id
+                            FROM rso_memberships
+                            WHERE rso_memberships.user_id = $2
+                        )
                     )
                 )
             )
