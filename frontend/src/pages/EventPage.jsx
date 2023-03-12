@@ -143,7 +143,7 @@ export const EventPage = observer(({ params }) => {
                                         Delete
                                     </Button>
                                 }
-                                {/* edit button that opens a textbox and rating entry under the comment */}
+                                {/* edit button */}
                                 {feedback.is_mine &&
                                     <Button variant="primary" size="sm" className="float-end me-2"
                                         onClick={() => {
