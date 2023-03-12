@@ -67,7 +67,7 @@ async function routes(fastify, _options) {
         preHandler: fastify.authenticate,
     }, async (request, reply) => {
         const { id } = request.user
-        const isSuperAdmin = await checkIsSuperAdmin(fastify.pg, id)
+        const isSuperAdmin = await checkIsSuperAdmin(fastify, id)
         if (isSuperAdmin) {
             const result = await fastify.pg.query(`
                 SELECT * FROM rsos`)
