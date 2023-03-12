@@ -7,6 +7,7 @@ import { AppState } from "./state/AppState";
 import { ErrorAlert } from "./components/ErrorAlert";
 
 import { BaseRouter } from "./routers/BaseRouter";
+import { useEffect, useState } from "react";
 
 const homeNav = [
   ['/', 'Events'],
@@ -22,10 +23,15 @@ const authNav = [
 const App = observer(() => {
   const [location] = useLocation()
   const nav = AppState.loggedIn ? homeNav : authNav
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-bs-theme', theme)
+  }, [theme])
 
   return (
     <>
-      <Navbar sticky="top" expand="sm" collapseOnSelect>
+      <Navbar sticky="top" variant={theme} bg={theme} expand="sm" collapseOnSelect>
         <Container>
           <Link href="/">
             <Navbar.Brand>Events Website</Navbar.Brand>
@@ -42,8 +48,7 @@ const App = observer(() => {
               <Nav>
               {/* dark/light toggle button */}
               <Nav.Link className="ms-auto" onClick={() => {
-                const theme = document.documentElement.getAttribute('data-bs-theme')
-                document.documentElement.setAttribute('data-bs-theme', theme === 'dark' ? 'light' : 'dark')
+                setTheme(theme === 'light' ? 'dark' : 'light')
               }}>
                 Dark/Light
               </Nav.Link>
