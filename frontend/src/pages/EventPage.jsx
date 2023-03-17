@@ -9,18 +9,18 @@ import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import { Icon } from 'leaflet'
 import { formatTime } from "../utils";
 import { useFetchWrapper } from "../api";
-import { FeedbackForm } from "../components/FeedbackForm";
-import { FeedbackEditModal } from "../components/FeedbackEditModal";
+import { CommentForm } from "../components/CommentForm";
+import { CommentEditModal } from "../components/CommentEditModal";
 
 import "leaflet/dist/leaflet.css"
 
 export const EventPage = observer(({ params }) => {
     const [event, setEvent] = useState({});
-    const [feedbacks, setFeedbacks] = useState([]);
-    const [feedbackRefreshIndicator, setRefreshFeedbackIndicator] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [commentRefreshIndicator, setCommentFeedbackIndicator] = useState(false);
     const [error, setError] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [idOfFeedbackToEdit, setidOfFeedbackToEdit] = useState(null);
+    const [idOfCommentToEdit, setidOfCommentToEdit] = useState(null);
 
     const fetchWrapper = useFetchWrapper()
 
@@ -35,34 +35,34 @@ export const EventPage = observer(({ params }) => {
     }, []);
 
     useEffect(() => {
-        fetchWrapper.get("/events/" + params.id + "/feedbacks")
+        fetchWrapper.get("/events/" + params.id + "/comments")
             .then((data) => {
-                setFeedbacks(data.feedbacks);
+                setComments(data.comments);
             });
-    }, [feedbackRefreshIndicator]);
+    }, [commentRefreshIndicator]);
 
-    const submitFeedback = (comment, rating) => {
-        fetchWrapper.post(`/events/${params.id}/feedbacks`,
-            { comment, rating, }
+    const submitComment = (text) => {
+        fetchWrapper.post(`/events/${params.id}/comments`,
+            { text }
         )
             .then(() => {
-                setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
+                setCommentFeedbackIndicator(!commentRefreshIndicator);
             })
     };
 
-    const onDeleteFeedback = (feedbackId) => {
-        fetchWrapper.delete(`/events/${params.id}/feedbacks/${feedbackId}`)
+    const onDeleteComment = (commentId) => {
+        fetchWrapper.delete(`/events/${params.id}/comments/${commentId}`)
             .then(() => {
-                setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
+                setCommentFeedbackIndicator(!commentRefreshIndicator);
             })
     };
 
-    const onEditFeedback = (comment, rating, feedbackId) => {
-        fetchWrapper.put(`/events/${params.id}/feedbacks/${feedbackId}`,
-            { comment, rating }
+    const onEditComment = (text, commentId) => {
+        fetchWrapper.put(`/events/${params.id}/comments/${commentId}`,
+            { text }
         )
             .then(() => {
-                setRefreshFeedbackIndicator(!feedbackRefreshIndicator);
+                setCommentFeedbackIndicator(!commentRefreshIndicator);
             })
     };
 
@@ -122,32 +122,32 @@ export const EventPage = observer(({ params }) => {
                 <hr />
                 <h4>Give feedback:</h4>
                 <div className="mb-3">
-                    <FeedbackForm
-                        handler={submitFeedback}
+                    <CommentForm
+                        handler={submitComment}
                     />
                 </div>
                 <hr />
 
-                <h4>Feedback:</h4>
-                {feedbacks.length == 0 ?
-                    <p>No feedback yet!</p>
-                    : feedbacks.map((feedback) => (
-                        <Card key={feedback.id} className="mb-3" bg={"light"}>
+                <h4>Comments:</h4>
+                {comments.length == 0 ?
+                    <p>No comments yet! Feel free to add one.</p>
+                    : comments.map((comment) => (
+                        <Card key={comment.id} className="mb-3" bg={"light"}>
                             <Card.Header>
-                                {feedback.username}
+                                {comment.username}
                                 {/*  delete button */}
-                                {feedback.is_mine &&
+                                {comment.is_mine &&
                                     <Button variant="danger" size="sm" className="float-end"
-                                        onClick={() => onDeleteFeedback(feedback.id)}
+                                        onClick={() => onDeleteComment(comment.id)}
                                     >
                                         Delete
                                     </Button>
                                 }
                                 {/* edit button */}
-                                {feedback.is_mine &&
+                                {comment.is_mine &&
                                     <Button variant="primary" size="sm" className="float-end me-2"
                                         onClick={() => {
-                                            setidOfFeedbackToEdit(feedback.id)
+                                            setidOfCommentToEdit(comment.id)
                                             setShowEditModal(true)
                                         }}
                                     >
@@ -156,26 +156,17 @@ export const EventPage = observer(({ params }) => {
                                 }
                             </Card.Header>
                             <Card.Body>
-                                <Card.Text>{feedback.comment}</Card.Text>
+                                <Card.Text>{comment.text}</Card.Text>
                             </Card.Body>
-                            <Card.Footer>
-                                <ReactStars
-                                    count={5}
-                                    value={feedback.rating}
-                                    size={24}
-                                    edit={false}
-                                    isHalf={true}
-                                />
-                            </Card.Footer>
                         </Card>
                     ))
                 }
 
-                <FeedbackEditModal
+                <CommentEditModal
                     show={showEditModal}
                     handleClose={() => setShowEditModal(false)}
-                    feedbackId={idOfFeedbackToEdit}
-                    handleSubmit={onEditFeedback}
+                    feedbackId={idOfCommentToEdit}
+                    handleSubmit={onEditComment}
                 />
             </>
         )

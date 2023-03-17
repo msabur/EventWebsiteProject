@@ -8,12 +8,12 @@ import { getEvents, getEvent } from "../db_helpers.js"
 
 async function routes(fastify, options) {
     // GET /events: get basic info of all events
-    // GET /events/:id: get full info of an event and its feedbacks (comments/ratings)
+    // GET /events/:id: get full info of an event and its comments (comments/ratings)
     // POST /events: create new event (admin only)
-    // POST /events/:id/feedbacks: create new feedback
-    // GET /events/:id/feedbacks: get all feedbacks of an event
-    // DELETE /events/:eventid/feedbacks/:feedbackid: delete a feedback (author only)
-    // PUT /events/:eventid/feedbacks/:feedbackid: update a feedback (author only)
+    // POST /events/:id/comments: create new comment
+    // GET /events/:id/comments: get all comments of an event
+    // DELETE /events/:eventid/comments/:commentid: delete a comment (author only)
+    // PUT /events/:eventid/comments/:commentid: update a comment (author only)
 
     fastify.get('/events', { preHandler: fastify.authenticate, }, async (request, reply) => {
         const { id } = request.user
@@ -49,7 +49,7 @@ async function routes(fastify, options) {
         reply.send({ message: 'Not implemented' })
     })
 
-    fastify.get('/events/:id/feedbacks', {
+    fastify.get('/events/:id/comments', {
         preHandler: fastify.authenticate,
         schema: {
             params: {
@@ -72,20 +72,20 @@ async function routes(fastify, options) {
         }
         
         // this adds a "is_mine" field indicating if the author is the current user
-        const feedbacksResult = await fastify.pg.query(
-            `SELECT feedbacks.id, users.username, comment, rating,
-                CASE WHEN feedbacks.author_id = $2 THEN true ELSE false END AS is_mine
-            FROM feedbacks
-            JOIN users ON feedbacks.author_id = users.id
+        const commentsResult = await fastify.pg.query(
+            `SELECT comments.id, users.username, comments.text,
+                CASE WHEN comments.author_id = $2 THEN true ELSE false END AS is_mine
+            FROM comments
+            JOIN users ON comments.author_id = users.id
             WHERE event_id = $1`,
             [eventId, userId]
         )
-        const feedbacks = feedbacksResult.rows || []
-        reply.send({ feedbacks })
+        const comments = commentsResult.rows || []
+        reply.send({ comments })
     })
 
 
-    fastify.post('/events/:id/feedbacks', {
+    fastify.post('/events/:id/comments', {
         preHandler: fastify.authenticate,
         schema: {
             params: {
@@ -98,16 +98,15 @@ async function routes(fastify, options) {
             body: {
                 type: 'object',
                 properties: {
-                    comment: { type: 'string' },
-                    rating: { type: 'number' }
+                    text: { type: 'string' }
                 },
-                required: ['comment', 'rating']
+                required: ['text']
             }
         }
     }, async (request, reply) => {
         const { id: eventId } = request.params
         const { id: userId } = request.user
-        const { comment, rating } = request.body
+        const { text } = request.body
 
         // check if user can access this event
         const event = await getEvent(fastify, eventId, userId)
@@ -117,60 +116,60 @@ async function routes(fastify, options) {
         }
 
         await fastify.pg.query(
-            `INSERT INTO feedbacks (event_id, author_id, comment, rating)
-            VALUES ($1, $2, $3, $4)`,
-            [eventId, userId, comment, rating]
+            `INSERT INTO comments (event_id, author_id, text)
+            VALUES ($1, $2, $3)`,
+            [eventId, userId, text]
         )
 
         reply.send({ message: 'Success!' })
     })
 
     // event id isn't needed here, but it's included for consistency
-    fastify.delete('/events/:eventid/feedbacks/:feedbackid', {
+    fastify.delete('/events/:eventid/comments/:commentid', {
         preHandler: fastify.authenticate,
         schema: {
             params: {
                 type: 'object',
                 properties: {
                     eventid: { type: 'number' },
-                    feedbackid: { type: 'number' }
+                    commentid: { type: 'number' }
                 },
-                required: ['eventid', 'feedbackid']
+                required: ['eventid', 'commentid']
             }
         }
     }, async (request, reply) => {
-        const { feedbackid: feedbackId } = request.params
+        const { commentid: commentId } = request.params
         const { id: userId } = request.user
 
-        // check if user is the author of the feedback
-        const feedbackResult = await fastify.pg.query(
-            `SELECT * FROM feedbacks WHERE id = $1 AND author_id = $2`,
-            [feedbackId, userId]
+        // check if user is the author of the comment
+        const commentResult = await fastify.pg.query(
+            `SELECT * FROM comments WHERE id = $1 AND author_id = $2`,
+            [commentId, userId]
         )
-        const feedback = feedbackResult.rows[0]
-        if (!feedback) {
+        const comment = commentResult.rows[0]
+        if (!comment) {
             reply.code(403).send({ message: 'Forbidden' })
             return
         }
 
         await fastify.pg.query(
-            `DELETE FROM feedbacks WHERE id = $1`,
-            [feedbackId]
+            `DELETE FROM comments WHERE id = $1`,
+            [commentId]
         )
 
         reply.send({ message: 'Success!' })
     })
 
-    fastify.put('/events/:eventid/feedbacks/:feedbackid', {
+    fastify.put('/events/:eventid/comments/:commentid', {
         preHandler: fastify.authenticate,
         schema: {
             params: {
                 type: 'object',
                 properties: {
                     eventid: { type: 'number' },
-                    feedbackid: { type: 'number' }
+                    commentid: { type: 'number' }
                 },
-                required: ['eventid', 'feedbackid']
+                required: ['eventid', 'commentid']
             },
             body: {
                 type: 'object',
@@ -178,28 +177,28 @@ async function routes(fastify, options) {
                     comment: { type: 'string' },
                     rating: { type: 'number' }
                 },
-                required: ['comment', 'rating']
+                required: ['text']
             }
         }
     }, async (request, reply) => {
-        const { feedbackid: feedbackId } = request.params
+        const { commentid: commentId } = request.params
         const { id: userId } = request.user
-        const { comment, rating } = request.body
+        const { text } = request.body
 
-        // check if user is the author of the feedback
-        const feedbackResult = await fastify.pg.query(
-            `SELECT * FROM feedbacks WHERE id = $1 AND author_id = $2`,
-            [feedbackId, userId]
+        // check if user is the author of the comment
+        const commentResult = await fastify.pg.query(
+            `SELECT * FROM comments WHERE id = $1 AND author_id = $2`,
+            [commentId, userId]
         )
-        const feedback = feedbackResult.rows[0]
-        if (!feedback) {
+        
+        if (commentResult.rows.length === 0) {
             reply.code(403).send({ message: 'Forbidden' })
             return
         }
 
         await fastify.pg.query(
-            `UPDATE feedbacks SET comment = $1, rating = $2 WHERE id = $3`,
-            [comment, rating, feedbackId]
+            `UPDATE comments SET text = $1 WHERE id = $3`,
+            [text, commentId]
         )
 
         reply.send({ message: 'Success!' })
