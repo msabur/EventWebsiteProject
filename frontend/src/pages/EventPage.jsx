@@ -120,7 +120,7 @@ export const EventPage = observer(({ params }) => {
                 </Table>
 
                 <hr />
-                <h4>Give feedback:</h4>
+                <h4>Write a comment:</h4>
                 <div className="mb-3">
                     <CommentForm
                         handler={submitComment}
