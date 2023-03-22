@@ -11,7 +11,9 @@ async function routes(fastify, options) {
     // GET /events/:id: get full info of an event and its comments (comments/ratings)
     // POST /events: create new event (admin only)
     // POST /events/:id/comments: create new comment
+    // POST /events/:id/rating: create new rating or update existing rating
     // GET /events/:id/comments: get all comments of an event
+    // GET /events/:id/ratingInfo: get rating info of an event: own rating, avg rating, num ratings
     // DELETE /events/:eventid/comments/:commentid: delete a comment (author only)
     // PUT /events/:eventid/comments/:commentid: update a comment (author only)
 
@@ -70,7 +72,7 @@ async function routes(fastify, options) {
             reply.code(404).send({ message: 'Event not found' })
             return
         }
-        
+
         // this adds a "is_mine" field indicating if the author is the current user
         const commentsResult = await fastify.pg.query(
             `SELECT comments.id, users.username, comments.text,
@@ -190,7 +192,7 @@ async function routes(fastify, options) {
             `SELECT * FROM comments WHERE id = $1 AND author_id = $2`,
             [commentId, userId]
         )
-        
+
         if (commentResult.rows.length === 0) {
             reply.code(403).send({ message: 'Forbidden' })
             return
@@ -202,6 +204,88 @@ async function routes(fastify, options) {
         )
 
         reply.send({ message: 'Success!' })
+    })
+
+    fastify.post('/events/:id/rating', {
+        preHandler: fastify.authenticate,
+        schema: {
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'number' }
+                },
+                required: ['id']
+            },
+            body: {
+                type: 'object',
+                properties: {
+                    stars: { type: 'number' }
+                },
+                required: ['stars']
+            }
+        }
+    }, async (request, reply) => {
+        const { id: eventId } = request.params
+        const { id: userId } = request.user
+        const { stars } = request.body
+
+        // check if user can access this event
+        const event = await getEvent(fastify, eventId, userId)
+        if (!event) {
+            reply.code(404).send({ message: 'Event not found' })
+            return
+        }
+
+        await fastify.pg.query(
+            `INSERT INTO ratings (event_id, user_id, stars)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (event_id, user_id) DO UPDATE SET stars = $3`,
+            [eventId, userId, stars]
+        )
+
+        reply.send({ message: 'Success!' })
+    })
+
+    fastify.get('/events/:id/ratingInfo', {
+        preHandler: fastify.authenticate,
+        schema: {
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'number' }
+                },
+                required: ['id']
+            }
+        }
+    }, async (request, reply) => {
+        const { id: eventId } = request.params
+        const { id: userId } = request.user
+
+        // check if user can access this event
+        const event = await getEvent(fastify, eventId, userId)
+        if (!event) {
+            reply.code(404).send({ message: 'Event not found' })
+            return
+        }
+
+        const ratingsResult = await fastify.pg.query(
+            `SELECT AVG(stars) AS average, COUNT(*) AS count
+            FROM ratings
+            WHERE event_id = $1`,
+            [eventId]
+        )
+
+        const ownRatingResult = await fastify.pg.query(
+            `SELECT stars
+            FROM ratings
+            WHERE event_id = $1 AND user_id = $2`,
+            [eventId, userId]
+        )
+
+        const ratings = ratingsResult.rows[0]
+        const ownRating = ownRatingResult.rows[0] || { stars: null }
+
+        reply.send({ ratings, ownRating })
     })
 }
 

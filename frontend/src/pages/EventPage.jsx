@@ -17,7 +17,9 @@ import "leaflet/dist/leaflet.css"
 export const EventPage = observer(({ params }) => {
     const [event, setEvent] = useState({});
     const [comments, setComments] = useState([]);
-    const [commentRefreshIndicator, setCommentFeedbackIndicator] = useState(false);
+    const [commentRefreshIndicator, setCommentRefreshIndicator] = useState(false);
+    const [ratingInfo, setRatingInfo] = useState({});
+    const [ratingRefreshIndicator, setRatingRefreshIndicator] = useState(false);
     const [error, setError] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [idOfCommentToEdit, setidOfCommentToEdit] = useState(null);
@@ -41,19 +43,27 @@ export const EventPage = observer(({ params }) => {
             });
     }, [commentRefreshIndicator]);
 
+    useEffect(() => {
+        fetchWrapper.get("/events/" + params.id + "/ratingInfo")
+            .then((data) => {
+                setRatingInfo(data);
+                console.log(data)
+            });
+    }, []);
+
     const submitComment = (text) => {
         fetchWrapper.post(`/events/${params.id}/comments`,
             { text }
         )
             .then(() => {
-                setCommentFeedbackIndicator(!commentRefreshIndicator);
+                setCommentRefreshIndicator(!commentRefreshIndicator);
             })
     };
 
     const onDeleteComment = (commentId) => {
         fetchWrapper.delete(`/events/${params.id}/comments/${commentId}`)
             .then(() => {
-                setCommentFeedbackIndicator(!commentRefreshIndicator);
+                setCommentRefreshIndicator(!commentRefreshIndicator);
             })
     };
 
@@ -62,7 +72,25 @@ export const EventPage = observer(({ params }) => {
             { text }
         )
             .then(() => {
-                setCommentFeedbackIndicator(!commentRefreshIndicator);
+                setCommentRefreshIndicator(!commentRefreshIndicator);
+            })
+    };
+
+    const submitRating = (stars) => {
+        const hadOwnRating = ratingInfo.ownRating.stars != null;
+        fetchWrapper.post(`/events/${params.id}/rating`,
+            { stars }
+        )
+            .then(() => {
+                if (!hadOwnRating) {
+                    setRatingInfo({
+                        ...ratingInfo,
+                        ratings: {
+                            ...ratingInfo.ratings,
+                            count: Number(ratingInfo.ratings.count) + 1
+                        }
+                    })
+                }
             })
     };
 
@@ -72,7 +100,7 @@ export const EventPage = observer(({ params }) => {
                 <p>{error.message}</p>
             </>
         )
-    } else if (!event.location_latitude) {
+    } else if (!event.location_latitude || !ratingInfo.ratings) {
         return (
             <>
                 <p>Loading...</p>
@@ -126,6 +154,19 @@ export const EventPage = observer(({ params }) => {
                         handler={submitComment}
                     />
                 </div>
+
+                {/* ratings */}
+                <h4>Rating:</h4>
+                <ReactStars
+                    count={5}
+                    value={Number(ratingInfo.ratings.average || 0)}
+                    size={24}
+                    edit
+                    onChange={(stars) => {
+                        submitRating(stars);
+                    }}
+                />
+                <p>Number of ratings: {ratingInfo.ratings.count}</p>
                 <hr />
 
                 <h4>Comments:</h4>
