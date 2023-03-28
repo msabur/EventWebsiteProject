@@ -64,12 +64,12 @@ export const ViewRSOJoinRequestsModal = ({ show, handleClose }) => {
                     <Button variant="success" className="me-2"
                       onClick={() => handleAction(username, rso_name, 'allow')}
                     >
-                      Allow
+                      Yes
                     </Button>
                     <Button variant="danger"
                       onClick={() => handleAction(username, rso_name, 'deny')}
                     >
-                      Deny
+                      No
                     </Button>
                   </td>
                 </tr>
