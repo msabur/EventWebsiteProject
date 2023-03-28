@@ -4,11 +4,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { useFetchWrapper } from "../api";
 import { NewUniModal } from "./NewUniModal";
+import { ViewRSORequestsModal } from "./ViewRSORequestsModal";
 
 export const SuperAdminControlPanel = () => {
-    const fetchWrapper = useFetchWrapper();
-
     const [showNewUniModal, setShowNewUniModal] = useState(false);
+    const [showViewRSORequestsModal, setShowViewRSORequestsModal] = useState(false);
 
     return (
         <>
@@ -16,18 +16,24 @@ export const SuperAdminControlPanel = () => {
 
             <Row xs={3} sm={3} md={5} className="g-2">
                 <Col>
-                <Button variant="primary" onClick={() => setShowNewUniModal(true)}>
-                    New university
-                </Button>
+                    <Button variant="primary" onClick={() => setShowNewUniModal(true)}>
+                        New university
+                    </Button>
                 </Col>
                 <Col>
-                    <Button variant="primary">View requests</Button>
+                    <Button variant="primary" onClick={() => setShowViewRSORequestsModal(true)}>
+                        View RSO requests
+                    </Button>
                 </Col>
             </Row>
 
             <NewUniModal
                 show={showNewUniModal}
                 handleClose={() => setShowNewUniModal(false)}
+            />
+            <ViewRSORequestsModal
+                show={showViewRSORequestsModal}
+                handleClose={() => setShowViewRSORequestsModal(false)}
             />
         </>
     );

@@ -11,7 +11,7 @@ export const ControlPanelPage = observer(() => {
     // and admin sees both student controls and admin controls
     if (AppState.isSuperAdmin) {
         return <SuperAdminControlPanel />;
-    } else if (AppState.isAdmin === "admin") {
+    } else if (AppState.isAdmin) {
         return (
             <>
                 <AdminControlPanel />
