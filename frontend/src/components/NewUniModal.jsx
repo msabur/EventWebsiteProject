@@ -2,8 +2,28 @@ import React from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
+import { useFetchWrapper } from "../api";
 
-export const NewUniModal = ({ show, handleClose, handleSubmit }) => {
+export const NewUniModal = ({ show, handleClose }) => {
+    const fetchWrapper = useFetchWrapper();
+    
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (form.checkValidity() === false) {
+            return;
+        }
+        fetchWrapper.post("/universities", {
+            name: form.universityName.value,
+            location: form.universityLocation.value,
+            description: form.universityDescription.value,
+            num_students: form.universityNumStudents.value,
+        })
+            .finally(() => {
+                handleClose();
+            });
+    }
+
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>

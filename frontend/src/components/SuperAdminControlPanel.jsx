@@ -10,32 +10,13 @@ export const SuperAdminControlPanel = () => {
 
     const [showNewUniModal, setShowNewUniModal] = useState(false);
 
-    const handleCloseNewUniModal = () => setShowNewUniModal(false);
-    const handleShowNewUniModal = () => setShowNewUniModal(true);
-    const handleSubmitNewUniModal = (event) => {
-        event.preventDefault();
-        const form = event.currentTarget;
-        if (form.checkValidity() === false) {
-            return;
-        }
-        fetchWrapper.post("/universities", {
-            name: form.universityName.value,
-            location: form.universityLocation.value,
-            description: form.universityDescription.value,
-            num_students: form.universityNumStudents.value,
-        })
-            .finally(() => {
-                handleCloseNewUniModal();
-            });
-    }
-
     return (
         <>
             <h3>Superadmin controls</h3>
 
             <Row xs={3} sm={3} md={5} className="g-2">
                 <Col>
-                <Button variant="primary" onClick={handleShowNewUniModal}>
+                <Button variant="primary" onClick={() => setShowNewUniModal(true)}>
                     New university
                 </Button>
                 </Col>
@@ -46,8 +27,7 @@ export const SuperAdminControlPanel = () => {
 
             <NewUniModal
                 show={showNewUniModal}
-                handleClose={handleCloseNewUniModal}
-                handleSubmit={handleSubmitNewUniModal}
+                handleClose={() => setShowNewUniModal(false)}
             />
         </>
     );
