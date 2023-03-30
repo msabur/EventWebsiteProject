@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
-import { useFetchWrapper } from "../api";
+import { useFetchWrapper } from "../../api";
 
 export const ViewRSOJoinRequestsModal = ({ show, handleClose }) => {
   const fetchWrapper = useFetchWrapper();

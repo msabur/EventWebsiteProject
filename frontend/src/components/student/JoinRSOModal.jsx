@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import { useFetchWrapper } from "../api";
+import { useFetchWrapper } from "../../api";
 
 export const JoinRSOModal = ({ show, handleClose }) => {
     const [foundRSOs, setFoundRSOs] = useState([]);

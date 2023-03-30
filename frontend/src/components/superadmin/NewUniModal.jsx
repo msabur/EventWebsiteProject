@@ -2,7 +2,7 @@ import React from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import { useFetchWrapper } from "../api";
+import { useFetchWrapper } from "../../api";
 
 export const NewUniModal = ({ show, handleClose }) => {
     const fetchWrapper = useFetchWrapper();

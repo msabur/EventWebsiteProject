@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Stack from 'react-bootstrap/Stack';
-import { useFetchWrapper } from "../api";
+import { useFetchWrapper } from "../../api";
 
 export const CreateRSOModal = ({ show, handleClose }) => {
     const fetchWrapper = useFetchWrapper();

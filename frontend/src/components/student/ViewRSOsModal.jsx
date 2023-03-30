@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { useFetchWrapper } from '../api';
+import { useFetchWrapper } from '../../api';
 
 export const ViewRSOsModal = ({ show, handleClose }) => {
     const fetchWrapper = useFetchWrapper();

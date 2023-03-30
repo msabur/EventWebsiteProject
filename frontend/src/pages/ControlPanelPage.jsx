@@ -1,9 +1,9 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { AppState } from "../state/AppState";
-import { SuperAdminControlPanel  } from "../components/SuperAdminControlPanel";
-import { AdminControlPanel } from "../components/AdminControlPanel";
-import { StudentControlPanel } from "../components/StudentControlPanel";
+import { SuperAdminControlPanel  } from "../components/superadmin/SuperAdminControlPanel";
+import { AdminControlPanel } from "../components/admin/AdminControlPanel";
+import { StudentControlPanel } from "../components/student/StudentControlPanel";
 
 export const ControlPanelPage = observer(() => {
     // if superadmin return only superadmin controls
