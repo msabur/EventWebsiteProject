@@ -79,11 +79,6 @@ async function routes(fastify, options) {
             [username, universityId])
         reply.send({ message: 'Successfully registered!' })
     })
-
-    fastify.get('/protected', { preHandler: fastify.authenticate }, async (request, reply) => {
-        let { username, id } = request.user
-        reply.send({ message: `You are authenticated: username ${username}, id ${id}` })
-    })
 }
 
 export const authRoutes = routes
