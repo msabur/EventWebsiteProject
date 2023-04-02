@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ListGroup from 'react-bootstrap/ListGroup';
+import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useFetchWrapper } from '../../api';
@@ -19,29 +19,52 @@ export const ViewRSOsModal = ({ show, handleClose }) => {
             })
     }, [show]);
 
-        const handleSubmit = (event) => {
-            event.preventDefault();
-            const form = event.currentTarget;
-            if (form.checkValidity() === false) {
-                return;
-            }
-            handleClose();
-        }
-
-        return (
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>My RSOs</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <ListGroup as="ol" numbered className="scrollingListGroup">
-                        {rsos.map((rso, index) => (
-                            <ListGroup.Item as="li" key={index}>
-                                <p>{rso.name}</p>
-                            </ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                </Modal.Body>
-            </Modal>
-        );
+    const handleLeaveRSO = (rsoId) => {
+        fetchWrapper.post(`/rso/${rsoId}/leave`)
+            .then(() => {
+                setRSOs(rsos.filter((rso) => rso.id !== rsoId));
+            })
     }
+
+    return (
+        <Modal show={show} onHide={handleClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>My RSOs</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Table hover>
+                    <thead>
+                        <tr>
+                            <th>RSO Name</th>
+                            <th>Owned by me?</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rsos.map((rso) => (
+                            <tr key={rso.id}>
+                                <td>
+                                    <p>{rso.name}</p>
+                                </td>
+                                <td>
+                                    <p>{rso.is_mine ? "Yes" : "No"}</p>
+                                </td>
+                                <td>
+                                    {rso.is_mine ? (
+                                        <></>
+                                    ) : (
+                                        <Button variant="danger"
+                                            onClick={() => handleLeaveRSO(rso.id)}
+                                        >
+                                            Leave
+                                        </Button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </Modal.Body>
+        </Modal>
+    );
+}

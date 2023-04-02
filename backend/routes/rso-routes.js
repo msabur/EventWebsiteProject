@@ -13,6 +13,7 @@ async function routes(fastify, _options) {
     // POST /pending-rsos - approve/deny a pending rso. If accepted, owner becomes an admin
     // GET /my-rsos - get all rsos the current user is a member of
     // POST /rso/:id/join - join the rso with the given id (initially, is_approved is false)
+    // POST /rso/:id/leave - leave the rso with the given id
     // GET /my-rsos/pending-memberships - get all pending memberships for the current user's rsos
     // POST /my-rsos/pending-memberships - approve/deny a pending membership
 
@@ -150,8 +151,11 @@ async function routes(fastify, _options) {
         preHandler: fastify.authenticate,
     }, async (request, reply) => {
         const { id } = request.user
+
+        // select the rsos, but add a field called "is_mine"
         const result = await fastify.pg.query(`
-            SELECT * FROM rsos
+            SELECT rsos.*, rsos.owner_id = $1 AS is_mine
+            FROM rsos
             WHERE id IN (
                 SELECT rso_id FROM rso_memberships
                 WHERE user_id = $1
@@ -179,10 +183,45 @@ async function routes(fastify, _options) {
                 INSERT INTO rso_memberships (rso_id, user_id, is_approved)
                 VALUES ($1, $2, 'false');`,
                 [id, userId])
+
+            reply.send({ message: "RSO membership request sent" })
         } catch (err) {
             reply.code(400).send({ message: err.message })
             return
         }
+    });
+
+    fastify.post("/rso/:id/leave", {
+        preHandler: fastify.authenticate,
+        schema: {
+            params: {
+                type: "object",
+                required: ["id"],
+                properties: {
+                    id: { type: "integer" },
+                },
+            },
+        },
+    }, async (request, reply) => {
+        const { id } = request.params
+        const { id: userId } = request.user
+
+        // fail if the user is the owner of the rso
+        const ownerResult = await fastify.pg.query(`
+                SELECT * FROM rsos
+                WHERE id = $1 AND owner_id = $2`,
+            [id, userId])
+        if (ownerResult.rowCount > 0) {
+            reply.code(400).send({ message: "RSO owners cannot leave their RSOs" })
+            return
+        }
+        
+        await fastify.pg.query(`
+                DELETE FROM rso_memberships
+                WHERE rso_id = $1 AND user_id = $2`,
+            [id, userId])
+
+        reply.send({ message: "RSO membership deleted" })
     });
 
     fastify.get("/my-rsos/pending-memberships", {
