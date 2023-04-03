@@ -67,10 +67,6 @@ export const NewEventModal = ({ show, handleClose }) => {
         }
         const [eventLatitude, eventLongitude] = eventLocationCoordinates.value.split(" ")
 
-        /* how to convert times to postgres timestamptz */
-        const eventStartTime = new Date(form.eventStartTime.value).toISOString()
-        const eventEndTime = new Date(form.eventEndTime.value).toISOString()
-
         fetchWrapper.post("/events", {
             name: form.eventName.value,
             type: eventType,
@@ -80,8 +76,8 @@ export const NewEventModal = ({ show, handleClose }) => {
             latitude: eventLatitude,
             longitude: eventLongitude,
             radius: form.eventRadius.value,
-            startTime: eventStartTime,
-            endTime: eventEndTime,
+            startTime: form.eventStartTime.value,
+            endTime: form.eventEndTime.value,
             phoneNumber: form.eventPhoneNumber.value
         })
             .finally(() => {

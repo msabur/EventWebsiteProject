@@ -90,6 +90,9 @@ async function routes(fastify, options) {
 
         const locationName = await getLocationName(latitude, longitude)
 
+        const formattedStartTime = new Date(startTime).toISOString()
+        const formattedEndTime = new Date(endTime).toISOString()
+
         let insertRes = await fastify.pg.query(
             `INSERT INTO events (email_address, category, phone_number,
                 description, start_time, event_name, 
@@ -98,11 +101,9 @@ async function routes(fastify, options) {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING id`,
             [email_address, category, phoneNumber, description,
-                startTime, name, latitude, longitude, endTime,
-                locationName, radius]
+                formattedStartTime, name, latitude, longitude,
+                formattedEndTime, locationName, radius]
         )
-
-        console.log(insertRes.rows[0].id)
 
         if (type === 'public') {
             await fastify.pg.query(
