@@ -107,7 +107,7 @@ async function routes(fastify, options) {
 
         if (type === 'public') {
             await fastify.pg.query(
-                `INSERT INTO public_events (event_id)
+                `INSERT INTO public_events (id)
                 VALUES ($1)`,
                 [insertRes.rows[0].id]
             )
@@ -118,7 +118,7 @@ async function routes(fastify, options) {
             )).rows[0].university_id
 
             await fastify.pg.query(
-                `INSERT INTO private_events (event_id, host_university_id)
+                `INSERT INTO private_events (id, host_university_id)
                 VALUES ($1, $2)`,
                 [insertRes.rows[0].id, university_id]
             )
