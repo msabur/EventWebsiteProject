@@ -1,4 +1,5 @@
-import { getEvents, getEvent } from "../db_helpers.js"
+import { getEvents, getEvent, checkIsAdmin } from "../db_helpers.js"
+import { getLocationName } from "../utils.js"
 
 /**
  * A plugin that provide encapsulated routes
@@ -46,10 +47,100 @@ async function routes(fastify, options) {
         }
     })
 
-    fastify.post('/events', { preHandler: fastify.authenticate }, async (request, reply) => {
-        // TODO
-        reply.send({ message: 'Not implemented' })
+    fastify.post('/events', {
+        preHandler: fastify.authenticate,
+        schema: {
+            body: {
+                type: 'object',
+                properties: {
+                    name: { type: 'string' },
+                    type: { type: 'string' },
+                    rso: { type: 'string' },
+                    category: { type: 'string' },
+                    description: { type: 'string' },
+                    latitude: { type: 'number' },
+                    longitude: { type: 'number' },
+                    radius: { type: 'number' },
+                    startTime: { type: 'string' },
+                    endTime: { type: 'string' },
+                    phoneNumber: { type: 'string' }
+                },
+                required: ['name', 'type', 'category',
+                    'description', 'latitude', 'longitude',
+                    'startTime', 'endTime', 'phoneNumber', 'radius']
+            }
+        }
+    }, async (request, reply) => {
+        const { id: userId } = request.user
+        const {
+            name, type, rso, category, description,
+            latitude, longitude, radius,
+            startTime, endTime, phoneNumber
+        } = request.body
+
+        if (!checkIsAdmin(fastify, userId)) {
+            reply.code(403).send({ message: 'Not authorized' })
+            return
+        }
+
+        const email_address = (await fastify.pg.query(
+            `SELECT email FROM users WHERE id = $1`,
+            [userId]
+        )).rows[0].email
+
+        const locationName = await getLocationName(latitude, longitude)
+
+        let insertRes = await fastify.pg.query(
+            `INSERT INTO events (email_address, category, phone_number,
+                description, start_time, event_name, 
+                location_latitude, location_longitude, end_time,
+                location_name, location_radius_m)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING id`,
+            [email_address, category, phoneNumber, description,
+                startTime, name, latitude, longitude, endTime,
+                locationName, radius]
+        )
+
+        console.log(insertRes.rows[0].id)
+
+        if (type === 'public') {
+            await fastify.pg.query(
+                `INSERT INTO public_events (event_id)
+                VALUES ($1)`,
+                [insertRes.rows[0].id]
+            )
+        } else if (type === 'private') {
+            const university_id = await (fastify.pg.query(
+                `SELECT university_id FROM students WHERE id = $1`,
+                [userId]
+            )).rows[0].university_id
+
+            await fastify.pg.query(
+                `INSERT INTO private_events (event_id, host_university_id)
+                VALUES ($1, $2)`,
+                [insertRes.rows[0].id, university_id]
+            )
+        } else if (type === 'rso') {
+            // insert into rso events
+            const rso_id = (await fastify.pg.query(
+                `SELECT id FROM rsos WHERE name = $1`,
+                [rso]
+            )).rows[0].id
+
+            await fastify.pg.query(
+                `INSERT INTO rso_events (id, host_rso_id)
+                VALUES ($1, $2)`,
+                [insertRes.rows[0].id, rso_id]
+            )
+        } else {
+            reply.code(400).send({ message: 'Invalid event type' })
+            return
+        }
+
+        reply.send({ message: 'Success!' })
     })
+
 
     fastify.get('/events/:id/comments', {
         preHandler: fastify.authenticate,

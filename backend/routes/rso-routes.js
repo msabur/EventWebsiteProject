@@ -12,6 +12,7 @@ async function routes(fastify, _options) {
     // GET /pending-rsos - returns all rsos that aren't approved yet (superadmin only)
     // POST /pending-rsos - approve/deny a pending rso. If accepted, owner becomes an admin
     // GET /my-rsos - get all rsos the current user is a member of
+    // GET /my-rsos/owned-approved - get all approved rsos the current user owns
     // POST /rso/:id/join - join the rso with the given id (initially, is_approved is false)
     // POST /rso/:id/leave - leave the rso with the given id
     // GET /my-rsos/pending-memberships - get all pending memberships for the current user's rsos
@@ -164,6 +165,18 @@ async function routes(fastify, _options) {
         reply.send(result.rows)
     });
 
+    fastify.get("/my-rsos/owned-approved", {
+        preHandler: fastify.authenticate,
+    }, async (request, reply) => {
+        const { id } = request.user
+        const result = await fastify.pg.query(`
+            SELECT * FROM rsos
+            WHERE owner_id = $1
+            AND is_approved = true`,
+            [id])
+        reply.send(result.rows)
+    });
+
     fastify.post("/rso/:id/join", {
         preHandler: fastify.authenticate,
         schema: {
@@ -215,7 +228,7 @@ async function routes(fastify, _options) {
             reply.code(400).send({ message: "RSO owners cannot leave their RSOs" })
             return
         }
-        
+
         await fastify.pg.query(`
                 DELETE FROM rso_memberships
                 WHERE rso_id = $1 AND user_id = $2`,

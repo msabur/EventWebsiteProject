@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer } from "react-leaflet";
 import { useFetchWrapper } from "../../api";
 
 import "leaflet/dist/leaflet.css"
@@ -11,28 +11,78 @@ export const NewEventModal = ({ show, handleClose }) => {
     /* Required fields in form:
         * - category
         * - event name
+        * - event type (public/private/RSO)
         * - phone number
         * - description
-        * - location name
         * - location coordinates
         * - start time
         * - end time
     */
 
-    const categories = ["Choose...", "Technology", "Sports", "Academic", "Social", "Other"];
+    const makkahCoordinates = { lat: 21.4225, lng: 39.8261 }
+
+    const [map, setMap] = useState(null)
+    const [latitude, setLatitude] = useState(-1);
+    const [longitude, setLongitude] = useState(-1);
+
+    const [ownedApprovedRSOs, setOwnedApprovedRSOs] = useState([]);
+
+    const [eventType, setEventType] = useState("public");
+
+    const categories = ["Technology", "Sports", "Academic", "Social", "Talks", "Other"];
+
     const fetchWrapper = useFetchWrapper();
-    
+
+    const onMove = useCallback(() => {
+        console.log("onmove")
+        const { lat, lng } = map.getCenter()
+        setLatitude(lat.toFixed(4))
+        setLongitude(lng.toFixed(4))
+        console.log(latitude, longitude)
+    }, [map])
+
+    useEffect(() => {
+        if (!map) return
+        map.on('move', onMove)
+        return () => {
+            map.off('move', onMove)
+        }
+    }, [map, onMove])
+
+    const fetchOwnedApprovedRSOs = () => {
+        // add dummy entry indicating loading
+        setOwnedApprovedRSOs([{ id: -1, name: "Loading..." }]);
+        fetchWrapper.get("/my-rsos/owned-approved")
+            .then((data) => {
+                setOwnedApprovedRSOs(data);
+                console.log(data)
+            });
+    }
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             return;
         }
+        const [eventLatitude, eventLongitude] = eventLocationCoordinates.value.split(" ")
+
+        /* how to convert times to postgres timestamptz */
+        const eventStartTime = new Date(form.eventStartTime.value).toISOString()
+        const eventEndTime = new Date(form.eventEndTime.value).toISOString()
+
         fetchWrapper.post("/events", {
-            name: form.universityName.value,
-            location: form.universityLocation.value,
-            description: form.universityDescription.value,
-            num_students: form.universityNumStudents.value,
+            name: form.eventName.value,
+            type: eventType,
+            rso: (eventType === "rso" ? form.eventRSO.value : null),
+            category: form.eventCategory.value,
+            description: form.eventDescription.value,
+            latitude: eventLatitude,
+            longitude: eventLongitude,
+            radius: form.eventRadius.value,
+            startTime: eventStartTime,
+            endTime: eventEndTime,
+            phoneNumber: form.eventPhoneNumber.value
         })
             .finally(() => {
                 handleClose();
@@ -46,39 +96,89 @@ export const NewEventModal = ({ show, handleClose }) => {
             </Modal.Header>
             <Modal.Body>
                 <Form onSubmit={handleSubmit}>
-                    <Form.Group controlId="formEventName">
+                    <Form.Group controlId="eventName">
                         <Form.Label>Event name</Form.Label>
                         <Form.Control type="text" placeholder="Enter event name" required />
                     </Form.Group>
-                    <Form.Group controlId="formEventCategory">
+                    <Form.Group controlId="eventType">
+                        <Form.Label>Event type</Form.Label>
+                        <Form.Check type="radio"
+                            label="Public"
+                            name="eventType"
+                            checked={eventType === "public"}
+                            onChange={() => setEventType("public")}
+                            required
+                        />
+                        <Form.Check type="radio"
+                            label="Private"
+                            name="eventType"
+                            checked={eventType === "private"}
+                            onChange={() => setEventType("private")}
+                            required
+                        />
+                        <Form.Check type="radio"
+                            label="RSO"
+                            name="eventType"
+                            checked={eventType === "rso"}
+                            onChange={() => {
+                                fetchOwnedApprovedRSOs();
+                                setEventType("rso")
+                            }
+                            }
+                            required
+                        />
+                    </Form.Group>
+                    {eventType === "rso" && (
+                        <Form.Group controlId="eventRSO">
+                            <Form.Label>RSO</Form.Label>
+                            <Form.Select>
+                                {ownedApprovedRSOs.map(({ id, name }) => (
+                                    <option key={id}>{name}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    )}
+                    <Form.Group controlId="eventCategory">
                         <Form.Label>Category</Form.Label>
-                        <Form.Control as="select" required>
+                        <Form.Select>
                             {categories.map((category) => (
                                 <option key={category}>{category}</option>
                             ))}
-                        </Form.Control>
+                        </Form.Select>
                     </Form.Group>
-                    <Form.Group controlId="formEventDescription">
+                    <Form.Group controlId="eventDescription">
                         <Form.Label>Description</Form.Label>
                         <Form.Control as="textarea" rows={3} required />
                     </Form.Group>
-                    <Form.Group controlId="formEventLocationName">
-                        <Form.Label>Location name</Form.Label>
-                        <Form.Control type="text" placeholder="Enter location name" required />
+                    <Form.Group controlId="eventLocationCoordinates">
+                        <Form.Label>Coordinates</Form.Label>
+                        <Form.Control type="text" required readOnly
+                            placeholder="use map to select location"
+                            value={latitude == -1 ? "" : `${latitude} ${longitude}`}
+                        />
                     </Form.Group>
-                    <Form.Group controlId="formEventLocationCoordinates">
-                        <Form.Label>Location coordinates</Form.Label>
-                        <Form.Control type="text" placeholder="Enter location coordinates (TODO map)" required />
+                    <Form.Group controlId="eventRadius">
+                        <Form.Label>Radius (in meters)</Form.Label>
+                        <Form.Control type="number" defaultValue={15} required />
                     </Form.Group>
-                    <Form.Group controlId="formEventStartTime">
+                    <MapContainer
+                        center={makkahCoordinates}
+                        zoom={2}
+                        ref={setMap}
+                    >
+                        <TileLayer
+                            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <div id="map-crosshair">+</div>
+                    </MapContainer>
+                    <Form.Group controlId="eventStartTime">
                         <Form.Label>Start time</Form.Label>
                         <Form.Control type="datetime-local" required />
                     </Form.Group>
-                    <Form.Group controlId="formEventEndTime">
+                    <Form.Group controlId="eventEndTime">
                         <Form.Label>End time</Form.Label>
                         <Form.Control type="datetime-local" required />
                     </Form.Group>
-                    <Form.Group controlId="formEventPhoneNumber">
+                    <Form.Group controlId="eventPhoneNumber">
                         <Form.Label>Phone number</Form.Label>
                         <Form.Control type="text" placeholder="Enter phone number" required />
                     </Form.Group>

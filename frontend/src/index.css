@@ -8,7 +8,21 @@
 
 .leaflet-container {
     height: 200px;
-    width: 500px;
+    width: auto; /* looks ugly in event page, but nice in event create modal */
+}
+
+#map-crosshair {
+    left: calc(50% - 20px);
+    top: calc(50% - 20px); 
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    z-index: 10000;
+    text-align: center;
+    font-weight: normal;
+    font-size: 35px;
+    color: #222;
+    text-shadow: 1px 1px 3px #fff;
 }
 
 .in-front {

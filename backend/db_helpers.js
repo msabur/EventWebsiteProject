@@ -10,6 +10,17 @@ export async function checkIsSuperAdmin(fastify, id) {
 }
 
 /**
+ * 
+ * @param {import('fastify').FastifyInstance} fastify 
+ * @param {number} id 
+ * @returns {Promise<boolean>}
+ */
+export async function checkIsAdmin(fastify, id) {
+    const result = await fastify.pg.query('SELECT * FROM admins WHERE id = $1', [id])
+    return result.rows.length !== 0
+}
+
+/**
  * @param {import('fastify').FastifyInstance} fastify
  * @param {number} userId the id of the user
  * @returns 
