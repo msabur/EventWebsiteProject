@@ -6,33 +6,11 @@ import { useFetchWrapper } from "../../api";
 import { NewUniModal } from "./NewUniModal";
 import { ViewRSORequestsModal } from "./ViewRSORequestsModal";
 import { ViewPublicEventRequestsModal } from "./ViewPublicEventRequestsModal";
-import sampleEvents from "./sampleData.json"
 
 export const SuperAdminControlPanel = () => {
     const [showNewUniModal, setShowNewUniModal] = useState(false);
     const [showViewRSORequestsModal, setShowViewRSORequestsModal] = useState(false);
     const [showViewPublicEventRequestsModal, setShowViewPublicEventRequestsModal] = useState(false);
-
-    const fetchWrapper = useFetchWrapper();
-
-    const addSampleEvents = () => {
-        sampleEvents.forEach(event => {
-            fetchWrapper.post("/events", {
-                name: event.name,
-                type: event.type,
-                rso: event.rso,
-                category: event.category,
-                description: event.description,
-                latitude: event.latitude,
-                longitude: event.longitude,
-                radius: event.radius,
-                startTime: event.startTime,
-                endTime: event.endTime,
-                phoneNumber: event.phoneNumber
-            })
-        });
-        console.log("Sample events added");
-    }
 
     return (
         <>
@@ -47,16 +25,6 @@ export const SuperAdminControlPanel = () => {
                 <Col>
                     <Button variant="primary" onClick={() => setShowViewRSORequestsModal(true)}>
                         View RSO requests
-                    </Button>
-                </Col>
-                <Col>
-                    <Button variant="primary" onClick={() => setShowViewPublicEventRequestsModal(true)}>
-                        View public event requests
-                    </Button>
-                </Col>
-                <Col>
-                    <Button variant="danger" onClick={() => addSampleEvents()}>
-                        Add sample events
                     </Button>
                 </Col>
             </Row>
