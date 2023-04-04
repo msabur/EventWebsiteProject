@@ -114,7 +114,7 @@ async function routes(fastify, options) {
                 [insertRes.rows[0].id]
             )
         } else if (type === 'private') {
-            const university_id = await (fastify.pg.query(
+            const university_id = (await fastify.pg.query(
                 `SELECT university_id FROM students WHERE id = $1`,
                 [userId]
             )).rows[0].university_id
