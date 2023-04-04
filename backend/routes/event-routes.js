@@ -291,7 +291,7 @@ async function routes(fastify, options) {
         }
 
         await fastify.pg.query(
-            `UPDATE comments SET text = $1 WHERE id = $3`,
+            `UPDATE comments SET text = $1 WHERE id = $2`,
             [text, commentId]
         )
 

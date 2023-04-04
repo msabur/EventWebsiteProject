@@ -206,8 +206,8 @@ export const EventPage = observer(({ params }) => {
                 <CommentEditModal
                     show={showEditModal}
                     handleClose={() => setShowEditModal(false)}
-                    feedbackId={idOfCommentToEdit}
                     handleSubmit={onEditComment}
+                    commentId={idOfCommentToEdit}
                 />
             </>
         )
