@@ -1,4 +1,4 @@
-import { getEvents, getEvent, checkIsAdmin } from "../db_helpers.js"
+import { getEvents, getEvent, checkIsAdmin, checkIsSuperAdmin } from "../db_helpers.js"
 import { getLocationName } from "../utils.js"
 
 /**
@@ -17,6 +17,8 @@ async function routes(fastify, options) {
     // GET /events/:id/ratingInfo: get rating info of an event: own rating, avg rating, num ratings
     // DELETE /events/:eventid/comments/:commentid: delete a comment (author only)
     // PUT /events/:eventid/comments/:commentid: update a comment (author only)
+    // GET /events/public-pending: (superadmin) get public events pending approval
+    // POST /events/public-pending: (superadmin) approve/deny a public event
 
     fastify.get('/events', { preHandler: fastify.authenticate, }, async (request, reply) => {
         const { id } = request.user
@@ -378,6 +380,63 @@ async function routes(fastify, options) {
         const ownRating = ownRatingResult.rows[0] || { stars: null }
 
         reply.send({ ratings, ownRating })
+    })
+
+    fastify.get('/events/public-pending', {
+        preHandler: fastify.authenticate
+    }, async (request, reply) => {
+        const { id: userId } = request.user
+
+        if (!checkIsSuperAdmin(fastify, userId)) {
+            reply.code(403).send({ message: 'Forbidden' })
+            return
+        }
+
+        const eventsResult = await fastify.pg.query(
+            `SELECT events.id, events.event_name AS name
+            FROM events
+            JOIN public_events USING (id)
+            WHERE public_events.is_approved = false`
+        )
+        
+        reply.send(eventsResult.rows)
+    })
+
+    fastify.post('/events/public-pending', {
+        preHandler: fastify.authenticate,
+        schema: {
+            body: {
+                type: 'object',
+                properties: {
+                    eventId: { type: 'number' },
+                    approve: { type: 'boolean' }
+                },
+                required: ['eventId', 'approve']
+            }
+        }
+    }, async (request, reply) => {
+        const { id: userId } = request.user
+        const { eventId, approve } = request.body
+
+        if (!checkIsSuperAdmin(fastify, userId)) {
+            reply.code(403).send({ message: 'Forbidden' })
+            return
+        }
+
+        if (approve) {
+            await fastify.pg.query(
+                `UPDATE public_events SET is_approved = true WHERE id = $1`,
+                [eventId]
+            )
+        } else {
+            await fastify.pg.query(
+                `DELETE FROM events WHERE id = $1`,
+                [eventId]
+            )
+            // this will cascade delete the public_events entry too
+        }
+
+        reply.send({ message: 'Success!' })
     })
 }
 

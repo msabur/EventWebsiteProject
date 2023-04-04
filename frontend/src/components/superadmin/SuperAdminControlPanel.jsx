@@ -5,11 +5,13 @@ import Col from 'react-bootstrap/Col';
 import { useFetchWrapper } from "../../api";
 import { NewUniModal } from "./NewUniModal";
 import { ViewRSORequestsModal } from "./ViewRSORequestsModal";
+import { ViewPublicEventRequestsModal } from "./ViewPublicEventRequestsModal";
 import sampleEvents from "./sampleData.json"
 
 export const SuperAdminControlPanel = () => {
     const [showNewUniModal, setShowNewUniModal] = useState(false);
     const [showViewRSORequestsModal, setShowViewRSORequestsModal] = useState(false);
+    const [showViewPublicEventRequestsModal, setShowViewPublicEventRequestsModal] = useState(false);
 
     const fetchWrapper = useFetchWrapper();
 
@@ -48,6 +50,11 @@ export const SuperAdminControlPanel = () => {
                     </Button>
                 </Col>
                 <Col>
+                    <Button variant="primary" onClick={() => setShowViewPublicEventRequestsModal(true)}>
+                        View public event requests
+                    </Button>
+                </Col>
+                <Col>
                     <Button variant="danger" onClick={() => addSampleEvents()}>
                         Add sample events
                     </Button>
@@ -61,6 +68,10 @@ export const SuperAdminControlPanel = () => {
             <ViewRSORequestsModal
                 show={showViewRSORequestsModal}
                 handleClose={() => setShowViewRSORequestsModal(false)}
+            />
+            <ViewPublicEventRequestsModal
+                show={showViewPublicEventRequestsModal}
+                handleClose={() => setShowViewPublicEventRequestsModal(false)}
             />
         </>
     );
