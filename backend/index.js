@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 import Fastify from 'fastify'
+import blippPlugin from "fastify-blipp";
 import cors from '@fastify/cors'
 import fastifyBcrypt from 'fastify-bcrypt'
 import * as routes from './routes/index.js'
@@ -11,10 +12,16 @@ import * as plugins from './plugins/index.js'
  * @type {import('fastify').FastifyInstance} Instance of Fastify
  */
 const fastify = Fastify({
-  logger: true
+  exposeHeadRoutes: false,
+  logger: {
+    transport: {
+      target: "@fastify/one-line-logger"
+    }
+  }
 })
 
 // Register Fastify plugins
+fastify.register(blippPlugin)
 fastify.register(cors)
 fastify.register(fastifyBcrypt, { saltWorkFactor: 10 })
 
@@ -25,6 +32,7 @@ Object.values(routes).forEach(route => fastify.register(route))
 const start = async () => {
   try {
     await fastify.listen({ port: 3000 })
+    fastify.blipp()
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
