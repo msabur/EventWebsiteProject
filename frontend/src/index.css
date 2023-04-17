@@ -6,6 +6,10 @@
     color: red;
 }
 
+.newEventError {
+    color: red;
+}
+
 .leaflet-container {
     height: 200px;
     width: auto; /* looks ugly in event page, but nice in event create modal */

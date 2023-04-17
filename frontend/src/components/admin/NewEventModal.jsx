@@ -22,23 +22,23 @@ export const NewEventModal = ({ show, handleClose }) => {
     const makkahCoordinates = { lat: 21.4225, lng: 39.8261 }
 
     const [map, setMap] = useState(null)
-    const [latitude, setLatitude] = useState(-1);
-    const [longitude, setLongitude] = useState(-1);
+    const [latitude, setLatitude] = useState(makkahCoordinates.lat);
+    const [longitude, setLongitude] = useState(makkahCoordinates.lng);
 
     const [ownedApprovedRSOs, setOwnedApprovedRSOs] = useState([]);
 
     const [eventType, setEventType] = useState("public");
+
+    const [hadError, setHadError] = useState(false);
 
     const categories = ["Technology", "Sports", "Academic", "Social", "Talks", "Other"];
 
     const fetchWrapper = useFetchWrapper();
 
     const onMove = useCallback(() => {
-        console.log("onmove")
         const { lat, lng } = map.getCenter()
         setLatitude(lat.toFixed(4))
         setLongitude(lng.toFixed(4))
-        console.log(latitude, longitude)
     }, [map])
 
     useEffect(() => {
@@ -60,6 +60,7 @@ export const NewEventModal = ({ show, handleClose }) => {
     }
 
     const handleSubmit = (event) => {
+        setHadError(false);
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
@@ -80,9 +81,12 @@ export const NewEventModal = ({ show, handleClose }) => {
             endTime: form.eventEndTime.value,
             phoneNumber: form.eventPhoneNumber.value
         })
-            .finally(() => {
+            .then(() => {
                 handleClose();
-            });
+            })
+            .catch(() => {
+                setHadError(true);
+            })
     }
 
     return (
@@ -181,6 +185,11 @@ export const NewEventModal = ({ show, handleClose }) => {
                     <Button variant="primary" type="submit">
                         Submit
                     </Button>
+                    {hadError && (
+                        <p className="newEventError">
+                            Error occurred while creating event
+                        </p>
+                    )}
                 </Form>
             </Modal.Body>
         </Modal>
