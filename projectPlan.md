@@ -1,7 +1,7 @@
 # Architecture
 
 - vite frontend: simple static React frontend. like create-react-app but faster in development
-- fastify.js backend, hosted (run locally during development)
+- fastify.js backend
 - postgresSQL database, hosted on Supabase
 
 # Frontend design and operations
