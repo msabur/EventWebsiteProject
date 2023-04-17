@@ -95,6 +95,11 @@ async function routes(fastify, options) {
         const formattedStartTime = new Date(startTime).toISOString()
         const formattedEndTime = new Date(endTime).toISOString()
 
+        if (formattedStartTime >= formattedEndTime) {
+            reply.code(400).send({ message: 'Start time must be before end time' })
+            return
+        }
+
         // Check for events that overlap in time
         const overlappingEvents = await fastify.pg.query(
             `SELECT id, location_latitude, location_longitude, location_radius_m
