@@ -1,5 +1,5 @@
 import { getEvents, getEvent, checkIsAdmin, checkIsSuperAdmin } from "../db_helpers.js"
-import { getLocationName } from "../utils.js"
+import { getLocationName, calculateDistance } from "../utils.js"
 
 /**
  * A plugin that provide encapsulated routes
@@ -94,6 +94,28 @@ async function routes(fastify, options) {
 
         const formattedStartTime = new Date(startTime).toISOString()
         const formattedEndTime = new Date(endTime).toISOString()
+
+        // Check for events that overlap in time
+        const overlappingEvents = await fastify.pg.query(
+            `SELECT id, location_latitude, location_longitude, location_radius_m
+            FROM events
+            WHERE (
+                (start_time <= $1 AND end_time >= $1) OR
+                (start_time >= $1 AND start_time <= $2)
+            )`,
+            [formattedStartTime, formattedEndTime]
+        )
+
+        // Filter for events that conflict in location
+        const conflictingEvents = overlappingEvents.rows.filter((event) => {
+            const distance = calculateDistance(latitude, longitude, event.location_latitude, event.location_longitude)
+            return distance <= (radius + event.location_radius_m)
+        })
+
+        if (conflictingEvents.length > 0) {
+            reply.code(409).send({ message: 'Event conflicts with existing event' })
+            return
+        }
 
         let insertRes = await fastify.pg.query(
             `INSERT INTO events (email_address, category, phone_number,
@@ -398,7 +420,7 @@ async function routes(fastify, options) {
             JOIN public_events USING (id)
             WHERE public_events.is_approved = false`
         )
-        
+
         reply.send(eventsResult.rows)
     })
 
