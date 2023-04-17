@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Button from 'react-bootstrap/Button';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import { useFetchWrapper } from "../../api";
+import Stack from 'react-bootstrap/Stack';
 import { NewUniModal } from "./NewUniModal";
 import { ViewRSORequestsModal } from "./ViewRSORequestsModal";
 import { ViewPublicEventRequestsModal } from "./ViewPublicEventRequestsModal";
@@ -16,18 +14,17 @@ export const SuperAdminControlPanel = () => {
         <>
             <h3>Superadmin controls</h3>
 
-            <Row xs={3} sm={3} md={5} className="g-2">
-                <Col>
-                    <Button variant="primary" onClick={() => setShowNewUniModal(true)}>
-                        New university
-                    </Button>
-                </Col>
-                <Col>
-                    <Button variant="primary" onClick={() => setShowViewRSORequestsModal(true)}>
-                        View RSO requests
-                    </Button>
-                </Col>
-            </Row>
+            <Stack gap={3}>
+                <Button variant="primary" onClick={() => setShowNewUniModal(true)}>
+                    New university
+                </Button>
+                <Button variant="primary" onClick={() => setShowViewRSORequestsModal(true)}>
+                    View RSO requests
+                </Button>
+                <Button variant="primary" onClick={() => setShowViewPublicEventRequestsModal(true)}>
+                    View public event requests
+                </Button>
+            </Stack>
 
             <NewUniModal
                 show={showNewUniModal}
