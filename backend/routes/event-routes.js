@@ -102,7 +102,8 @@ async function routes(fastify, options) {
 
         // Check for events that overlap in time
         const overlappingEvents = await fastify.pg.query(
-            `SELECT id, location_latitude, location_longitude, location_radius_m
+            `SELECT id, location_latitude, location_longitude, location_radius_m,
+                start_time, end_time
             FROM events
             WHERE (
                 (start_time <= $1 AND end_time >= $1) OR
@@ -118,7 +119,9 @@ async function routes(fastify, options) {
         })
 
         if (conflictingEvents.length > 0) {
-            reply.code(409).send({ message: 'Event conflicts with existing event' })
+            reply.code(409).send({
+                message: `Event conflicts with existing event: lat,lng,start,end: ${conflictingEvents[0].location_latitude},${conflictingEvents[0].location_longitude},${conflictingEvents[0].start_time},${conflictingEvents[0].end_time}`
+            })
             return
         }
 
@@ -133,6 +136,8 @@ async function routes(fastify, options) {
                 formattedStartTime, name, latitude, longitude,
                 formattedEndTime, locationName, radius]
         )
+
+        const rollback = async () => { await fastify.pg.query(`DELETE FROM events WHERE id = $1`, [insertRes.rows[0].id]) }
 
         if (type === 'public') {
             await fastify.pg.query(
@@ -152,18 +157,37 @@ async function routes(fastify, options) {
                 [insertRes.rows[0].id, university_id]
             )
         } else if (type === 'rso') {
-            // insert into rso events
-            const rso_id = (await fastify.pg.query(
+            const rso_result = await fastify.pg.query(
                 `SELECT id FROM rsos WHERE name = $1`,
                 [rso]
-            )).rows[0].id
+            )
+            if (rso_result.rows.length === 0) {
+                await rollback()
+                reply.code(400).send({ message: 'RSO not found' })
+                return
+            }
+            const rso_id = rso_result.rows[0].id
 
+            // check if user is owner of rso
+            const isOwner = (await fastify.pg.query(
+                `SELECT id FROM rsos WHERE id = $1 AND owner_id = $2`,
+                [rso_id, userId]
+            )).rows.length > 0
+
+            if (!isOwner) {
+                await rollback()
+                reply.code(403).send({ message: 'You are not the owner of this RSO' })
+                return
+            }
+
+            // insert into rso events
             await fastify.pg.query(
                 `INSERT INTO rso_events (id, host_rso_id)
                 VALUES ($1, $2)`,
                 [insertRes.rows[0].id, rso_id]
             )
         } else {
+            await rollback()
             reply.code(400).send({ message: 'Invalid event type' })
             return
         }

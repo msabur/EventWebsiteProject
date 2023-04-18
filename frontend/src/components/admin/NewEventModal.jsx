@@ -29,7 +29,7 @@ export const NewEventModal = ({ show, handleClose }) => {
 
     const [eventType, setEventType] = useState("public");
 
-    const [hadError, setHadError] = useState(false);
+    const [error, setError] = useState("");
 
     const categories = ["Technology", "Sports", "Academic", "Social", "Talks", "Other"];
 
@@ -60,7 +60,7 @@ export const NewEventModal = ({ show, handleClose }) => {
     }
 
     const handleSubmit = (event) => {
-        setHadError(false);
+        setError("");
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
@@ -84,8 +84,8 @@ export const NewEventModal = ({ show, handleClose }) => {
             .then(() => {
                 handleClose();
             })
-            .catch(() => {
-                setHadError(true);
+            .catch((error) => {
+                setError(error);
             })
     }
 
@@ -185,9 +185,9 @@ export const NewEventModal = ({ show, handleClose }) => {
                     <Button variant="primary" type="submit">
                         Submit
                     </Button>
-                    {hadError && (
+                    {error != "" && (
                         <p className="newEventError">
-                            Error occurred while creating event
+                            {error}
                         </p>
                     )}
                 </Form>
