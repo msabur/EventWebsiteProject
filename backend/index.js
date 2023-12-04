@@ -29,9 +29,12 @@ fastify.register(fastifyBcrypt, { saltWorkFactor: 10 })
 Object.values(plugins).forEach(plugin => fastify.register(plugin))
 Object.values(routes).forEach(route => fastify.register(route))
 
+const port = process.env.PORT || 3000;
+const host = ("RENDER" in process.env) ? `0.0.0.0` : `localhost`;
+
 const start = async () => {
   try {
-    await fastify.listen({ port: 3000 })
+    await fastify.listen({host: host, port: port })
     fastify.blipp()
   } catch (err) {
     fastify.log.error(err)
