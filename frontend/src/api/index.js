@@ -1,5 +1,7 @@
 import { AppState } from "../state/AppState";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000/"
+
 // adapted from https://jasonwatmore.com/post/2021/09/17/react-fetch-set-authorization-header-for-api-requests-if-user-logged-in
 export function useFetchWrapper() {
     return {
@@ -11,7 +13,6 @@ export function useFetchWrapper() {
 
     function request(method) {
         return async (path, body) => {
-            const url = `http://localhost:3000${path}`;
             const requestOptions = {
                 method,
                 headers: authHeader()
@@ -20,7 +21,7 @@ export function useFetchWrapper() {
                 requestOptions.headers['Content-Type'] = 'application/json';
                 requestOptions.body = JSON.stringify(body);
             }
-            const response = await fetch(url, requestOptions);
+            const response = await fetch(`${BACKEND_URL}${path}`, requestOptions);
             return handleResponse(response);
         }
     }
