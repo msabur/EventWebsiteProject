@@ -3,8 +3,11 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { AppState } from "../state/AppState";
 import { observer } from 'mobx-react-lite';
+import { useFetchWrapper } from '../api';
 
 export const LoginPage = observer(() => {
+  const fetchWrapper = useFetchWrapper();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,24 +27,13 @@ export const LoginPage = observer(() => {
       return;
     }
 
-    fetch('http://localhost:3000/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    })
-      .then((res) => res.json())
+    fetchWrapper.post('/login', { username, password })
       .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setError('');
-          AppState.onLogin(username, data)
-        };
+        setError('');
+        AppState.onLogin(username, data);
       })
-      .catch(err => {
-        setError(err.message);
+      .catch((err) => {
+        setError(err);
       });
   };
 

@@ -16,7 +16,7 @@ async function routes(fastify, options) {
             },
         },
     }, async (request, reply) => {
-        const invalidLogin = { error: 'Invalid username or password' }
+        const invalidLogin = { message: 'Invalid username or password' }
         const { username, password } = request.body
         const result = await fastify.pg.query('SELECT * FROM users WHERE username = $1', [username])
         const user = result.rows[0]
@@ -70,7 +70,7 @@ async function routes(fastify, options) {
                 VALUES ($1, $2, $3)`,
                 [username, hashedPassword, email])
         } catch (err) {
-            reply.code(400).send({ error: 'Username already exists' })
+            reply.code(400).send({ message: 'Username already exists' })
         }
         const universityId = universityResult.rows[0].id
         await fastify.pg.query(`

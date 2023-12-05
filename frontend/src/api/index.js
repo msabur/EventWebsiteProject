@@ -1,6 +1,6 @@
 import { AppState } from "../state/AppState";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000/"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"
 
 // adapted from https://jasonwatmore.com/post/2021/09/17/react-fetch-set-authorization-header-for-api-requests-if-user-logged-in
 export function useFetchWrapper() {

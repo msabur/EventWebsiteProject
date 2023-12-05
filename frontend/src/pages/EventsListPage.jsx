@@ -8,8 +8,11 @@ import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
 import { AppState } from '../state/AppState'
 import { formatTime } from '../utils';
+import { useFetchWrapper } from '../api';
 
 export const EventsListPage = observer(() => {
+  const fetchWrapper = useFetchWrapper();
+
   const [events, setEvents] = useState([]);
 
   const typeToBadge = {
@@ -19,18 +22,10 @@ export const EventsListPage = observer(() => {
   }
 
   useEffect(() => {
-    fetch('http://localhost:3000/events', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AppState.token}`
-      }
-    })
-      .then((response) => response.json())
+    fetchWrapper.get('/events')
       .then((data) => {
         setEvents(data.events);
-      }
-      );
+      });
   }, []);
 
   return (

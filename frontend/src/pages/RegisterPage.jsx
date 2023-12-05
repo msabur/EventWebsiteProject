@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useLocation } from 'wouter';
+import { useFetchWrapper } from '../api';
 
 export const RegisterPage = () => {
+    const fetchWrapper = useFetchWrapper();
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -13,11 +16,11 @@ export const RegisterPage = () => {
     const [, setLocation] = useLocation();
 
     useEffect(() => {
-        fetch('http://localhost:3000/universities')
-            .then((res) => res.json())
+        fetchWrapper.get('/universities')
             .then((data) => {
                 setUniversities(data);
-            });
+            }
+            );
     }, []);
 
     const handleUsernameChange = (e) => {
@@ -43,25 +46,13 @@ export const RegisterPage = () => {
             return;
         }
 
-        fetch('http://localhost:3000/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password, email, universityName }),
-        })
-            .then((res) => res.json())
+        fetchWrapper.post('/register', { username, password, email, universityName })
             .then((data) => {
-                console.log(data);
-                if (data.error) {
-                    setError(data.error);
-                } else {
-                    setError('');
-                    setLocation('/'); // redirect to login page
-                };
+                setError('');
+                setLocation('/'); // redirect to login page
             })
-            .catch(err => {
-                setError(err.message);
+            .catch((err) => {
+                setError(err);
             });
     };
 
