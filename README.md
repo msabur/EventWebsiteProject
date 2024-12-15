@@ -36,6 +36,8 @@ This is a website for events around a college campus. Users can create accounts,
 1. Set up Postgres database
 2. Run setupDatabase.sql on database
 
+to do: instructions for adding initial data
+
 ### Running the application
 
 1. Open a shell in the backend directory and another in the frontend directory
